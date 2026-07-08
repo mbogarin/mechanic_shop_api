@@ -7,7 +7,7 @@ from app.models import Customer, db
 from . import customers_bp
 
 
-# 1. Create new customer (POST):
+# = 1. Create new customer (POST):
 @customers_bp.route('/', methods=['POST'])
 def create_customer():
     try:
@@ -27,7 +27,7 @@ def create_customer():
     return customer_schema.jsonify(new_customer), 201
 
 
-# 2. Retrieve all customers (GET):
+# = 2. Retrieve all customers (GET):
 @customers_bp.route("/", methods=["GET"])
 def get_customers():
     query = select(Customer)
@@ -36,8 +36,8 @@ def get_customers():
     return customers_schema.jsonify(customers), 200
 
 
-# 3. Retrieve specific customer (GET):
-@customers_bp.route("//<int:customer_id>", methods=["GET"])
+# = 3. Retrieve specific customer (GET):
+@customers_bp.route("/<int:customer_id>", methods=["GET"])
 def get_customer(customer_id):
     customer = db.session.get(Customer, customer_id)
     
@@ -45,8 +45,9 @@ def get_customer(customer_id):
         return customer_schema.jsonify(customer), 200
     return jsonify({"error": "Customer not found."}), 404
 
-# 4. Update specific customer (PUT):
-@customers_bp.route("//<int:customer_id>", methods=["PUT"])
+
+# = 4. Update specific customer (PUT):
+@customers_bp.route("/<int:customer_id>", methods=["PUT"])
 def update_customer(customer_id):
     customer = db.session.get(Customer, customer_id)
     
@@ -64,8 +65,9 @@ def update_customer(customer_id):
     db.session.commit()
     return customer_schema.jsonify(customer), 200
 
-# 5. Delete specific customer (DELETE):
-@customers_bp.route("//<int:customer_id>", methods=["DELETE"])
+
+# = 5. Delete specific customer (DELETE):
+@customers_bp.route("/<int:customer_id>", methods=["DELETE"])
 def delete_customer(customer_id):
     customer = db.session.get(Customer, customer_id)
     

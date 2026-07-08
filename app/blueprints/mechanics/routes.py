@@ -8,7 +8,7 @@ from . import mechanics_bp
 
 # Mechanic routes:
 
-# 1. Create new mechanic (POST):
+# = 1. Create new mechanic (POST):
 @mechanics_bp.route("/", methods=["POST"])
 def create_mechanic():
     try:
@@ -23,7 +23,7 @@ def create_mechanic():
     return mechanic_schema.jsonify(new_mechanic), 201
 
 
-# 2. Retrieve all mechanics (GET):
+# = 2. Retrieve all mechanics (GET):
 @mechanics_bp.route("/", methods=["GET"])
 def get_mechanics():
     query = select(Mechanic)
@@ -32,7 +32,7 @@ def get_mechanics():
     return mechanics_schema.jsonify(mechanics), 200
 
 
-# 3. Update specific mechanic (PUT):
+# = 3. Update specific mechanic (PUT):
 @mechanics_bp.route("/<int:mechanic_id>", methods=["PUT"])
 def update_mechanic(mechanic_id):
     mechanic = db.session.get(Mechanic, mechanic_id)
@@ -52,9 +52,9 @@ def update_mechanic(mechanic_id):
     return mechanic_schema.jsonify(mechanic), 200
 
 
-# 4. Delete specific mechanic (DELETE):
+# = 4. Delete specific mechanic (DELETE):
 @mechanics_bp.route("/<int:mechanic_id>", methods=["DELETE"])
-def detele_mechanic(mechanic_id):
+def delete_mechanic(mechanic_id):
     mechanic = db.session.get(Mechanic, mechanic_id)
     
     if not mechanic:
