@@ -6,6 +6,8 @@ from .schemas import service_ticket_schema, service_tickets_schema
 from app.models import Service_Ticket, Customer, Mechanic, db
 from . import service_tickets_bp
 
+from app.extensions import limiter, cache
+
 
 # SERVICE TICKET ROUTES:
 
@@ -32,6 +34,9 @@ def create_service_ticket():
 
 # = 2. Retrieve all service tickets (GET):
 @service_tickets_bp.route("/", methods=["GET"])
+
+@cache.cached(timeout=60) # Set caching timeout to 60 seconds to get service tickets at a faster rate.
+
 def get_service_tickets():
     query = select(Service_Ticket)
     tickets = db.session.execute(query).scalars().all()
@@ -44,14 +49,17 @@ def get_service_tickets():
 
 # = 3. Assign a mechanic to a service ticket (PUT): 
 @service_tickets_bp.route("/<int:ticket_id>/assign-mechanic/<int:mechanic_id>", methods=["PUT"])
+
+@limiter.limit("3 per hour") # limit this request to 3x per hour to keep from assigning too many mechanics to service ticket. 
+
 def assign_mechanic(ticket_id, mechanic_id):
     
-    # Check if ticket exists:
+
     ticket = db.session.get(Service_Ticket, ticket_id)
     if not ticket: 
         return jsonify({"error": "Service ticket not found."}), 404
     
-    # Check if mechanic exists:
+
     mechanic = db.session.get(Mechanic, mechanic_id)
     if not mechanic:
         return jsonify({"error": "Mechanic not found."}), 404
@@ -72,12 +80,12 @@ def assign_mechanic(ticket_id, mechanic_id):
 @service_tickets_bp.route("/<int:ticket_id>/remove-mechanic/<int:mechanic_id>", methods=["PUT"])
 def remove_mechanic(ticket_id, mechanic_id):
     
-    # Check if ticket exists:
+ 
     ticket = db.session.get(Service_Ticket, ticket_id)
     if not ticket:
         return jsonify({"error": "Service ticket not found."}), 404
     
-    # Check if mechanic exists:
+
     mechanic = db.session.get(Mechanic, mechanic_id)
     if not mechanic:
         return jsonify({"error": "Mechanic not found."}), 404
