@@ -5,7 +5,7 @@ from app.models import db
 app = create_app('DevelopmentConfig') 
     
     
-# Create Tables in DB:
+# Create tables in DB:
 with app.app_context():
     db.create_all()
 

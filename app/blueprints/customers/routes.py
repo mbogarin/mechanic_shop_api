@@ -6,6 +6,7 @@ from .schemas import customer_schema, customers_schema
 from app.models import Customer, db
 from . import customers_bp
 
+# CUSTOMER ROUTES:
 
 # = 1. Create new customer (POST):
 @customers_bp.route('/', methods=['POST'])

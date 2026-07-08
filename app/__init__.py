@@ -18,12 +18,12 @@ def create_app(config_name):
     
     # = Register blueprints:
     # 1. Customer:
-    app.register_blueprint(customers_bp, url_prefix='/customers') # - note: remove url prefix from CRUD operations. 
+    app.register_blueprint(customers_bp, url_prefix='/customers')
     
     # 2. Mechanic:
     app.register_blueprint(mechanics_bp, url_prefix="/mechanics")
     
-    # 3. Service_Tickets:
+    # 3. Service Tickets:
     app.register_blueprint(service_tickets_bp, url_prefix="/service-tickets")
     
     

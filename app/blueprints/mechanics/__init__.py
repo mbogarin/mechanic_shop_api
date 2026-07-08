@@ -1,6 +1,6 @@
 from flask import Blueprint
 
-# = Mechanics:
+# = Mechanics blueprint:
 
 # Initialize blueprint:
 mechanics_bp = Blueprint("mechanics_bp", __name__)

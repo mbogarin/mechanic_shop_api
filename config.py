@@ -5,7 +5,7 @@ class DevelopmentConfig:
     DEBUG = True
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
-
+    
 class TestingConfig:
     pass
 

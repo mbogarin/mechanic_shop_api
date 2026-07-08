@@ -7,7 +7,7 @@ from app.models import Service_Ticket, Customer, Mechanic, db
 from . import service_tickets_bp
 
 
-# Service ticket routes:
+# SERVICE TICKET ROUTES:
 
 # = 1. Create new service ticket (POST):
 @service_tickets_bp.route("/", methods=["POST"])
@@ -40,7 +40,8 @@ def get_service_tickets():
 
 
 
-# Many-to-Many relationship: 
+# Many-to-Many relationship: Service ticket & Mechanic
+
 # = 3. Assign a mechanic to a service ticket (PUT): 
 @service_tickets_bp.route("/<int:ticket_id>/assign-mechanic/<int:mechanic_id>", methods=["PUT"])
 def assign_mechanic(ticket_id, mechanic_id):

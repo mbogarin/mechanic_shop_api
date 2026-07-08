@@ -6,7 +6,7 @@ from .schemas import mechanic_schema, mechanics_schema
 from app.models import Mechanic, db
 from . import mechanics_bp
 
-# Mechanic routes:
+# MECHANIC ROUTES:
 
 # = 1. Create new mechanic (POST):
 @mechanics_bp.route("/", methods=["POST"])
