@@ -10,7 +10,7 @@ class Base(DeclarativeBase):
 db = SQLAlchemy(model_class=Base)
 
 
-# SERVICE-MECHANIC JUNCTION TABLE: 
+# JUNCTION DB TABLES: 
 service_mechanic = db.Table(
     'service_mechanic', 
     Base.metadata, 
@@ -18,6 +18,12 @@ service_mechanic = db.Table(
     Column('mechanic_id', ForeignKey('mechanics.id'))
 ) # Many-to-Many relationship btwn Mechanics & Service Tickets:
 
+service_inventory = db.Table(
+    "service_inventory",
+    Base.metadata,
+    Column("service_ticket_id", ForeignKey("service_tickets.id"), primary_key=True),
+    Column("inventory_id", ForeignKey("inventory.id"), primary_key=True)
+)
 
 
 
@@ -55,6 +61,12 @@ class Service_Ticket(Base):
     # Many-to-Many relationship w/ Mechanics:
     mechanics: Mapped[List['Mechanic']] = relationship(secondary=service_mechanic, back_populates='service_tickets')
     
+    # Many-to-many relationship w/ Inventory:
+    parts: Mapped[List["Inventory"]] = relationship(
+        secondary=service_inventory,
+        back_populates="service_tickets"
+    )
+    
 
 
 # 3. MECHANICS:
@@ -82,3 +94,7 @@ class Inventory(Base):
     price: Mapped[float] = mapped_column(db.Float, nullable=False)
 
 
+    # Many-to-many relationship w/ Service Tickets:
+    service_tickets: Mapped[List["Service_Ticket"]] = relationship(
+        secondary=service_inventory, back_populates="parts"
+    )
