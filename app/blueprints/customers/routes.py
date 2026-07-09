@@ -1,12 +1,46 @@
+# CUSTOMER ROUTES:
+
 from flask import jsonify, request
 from marshmallow import ValidationError
 from sqlalchemy import select
 
-from .schemas import customer_schema, customers_schema
+from .schemas import customer_schema, customers_schema, login_schema
 from app.models import Customer, db
 from . import customers_bp
 
-# CUSTOMER ROUTES:
+from app.utils.util import encode_token # Token authentication
+
+
+
+# = Login route (Token Authentication):
+@customers_bp.route("/login", methods=["POST"])
+def login():
+    
+    try:
+        credentials = login_schema.load(request.json)
+        email = credentials['email']
+        password = credentials['password']
+    except ValidationError as e:
+        return jsonify(e.messages), 400
+    
+    query = select(Customer).where(Customer.email == email)
+    customer = db.session.execute(query).scalars().first() # Query for customer w/ matching email. 
+
+    # If customer w/ matching email is found, validate password:
+    if customer and customer.password == password:
+        token = encode_token(customer.id)
+        
+        response = {
+            "status" : "success",
+            "message" : "Customer successfully logged in!",
+            "token" : token
+        }
+        
+        return jsonify(response), 200
+    else:
+        return jsonify({"message": 'Invalid email or password! Please try again.'}), 401
+
+
 
 # = 1. Create new customer (POST):
 @customers_bp.route('/', methods=['POST'])
@@ -20,7 +54,7 @@ def create_customer():
     existing_customer = db.session.execute(query).scalars().all()
     
     if existing_customer:
-        return jsonify({"message": "Email already associated with an account."}), 400
+        return jsonify({"message": "Email is already associated with an account."}), 400
     
     new_customer = Customer(**customer_data)
     db.session.add(new_customer)

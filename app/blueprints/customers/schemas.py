@@ -9,3 +9,5 @@ class CustomerSchema(ma.SQLAlchemyAutoSchema):
 # Initialize schema instances:
 customer_schema = CustomerSchema()
 customers_schema = CustomerSchema(many=True)
+
+login_schema = CustomerSchema(exclude=["name", "phone"]) # token authentication login schema. 
