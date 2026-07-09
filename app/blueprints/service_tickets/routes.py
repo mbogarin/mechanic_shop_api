@@ -2,7 +2,7 @@ from flask import jsonify, request
 from marshmallow import ValidationError
 from sqlalchemy import select
 
-from .schemas import service_ticket_schema, service_tickets_schema
+from .schemas import service_ticket_schema, service_tickets_schema, edit_ticket_schema, return_ticket_schema
 from app.models import Service_Ticket, Customer, Mechanic, db
 from . import service_tickets_bp
 
@@ -35,7 +35,7 @@ def create_service_ticket():
 # = 2. Retrieve all service tickets (GET):
 @service_tickets_bp.route("/", methods=["GET"])
 
-@cache.cached(timeout=60) # Set caching timeout to 60 seconds to get service tickets at a faster rate.
+# @cache.cached(timeout=60) # Set caching timeout to 60 seconds to get service tickets at a faster rate.
 
 def get_service_tickets():
     query = select(Service_Ticket)
@@ -50,11 +50,9 @@ def get_service_tickets():
 # = 3. Assign a mechanic to a service ticket (PUT): 
 @service_tickets_bp.route("/<int:ticket_id>/assign-mechanic/<int:mechanic_id>", methods=["PUT"])
 
-@limiter.limit("3 per hour") # limit this request to 3x per hour to keep from assigning too many mechanics to service ticket. 
+# @limiter.limit("5 per hour") # limit this request to 5x per hour to keep from assigning too many mechanics to service ticket. 
 
 def assign_mechanic(ticket_id, mechanic_id):
-    
-
     ticket = db.session.get(Service_Ticket, ticket_id)
     if not ticket: 
         return jsonify({"error": "Service ticket not found."}), 404
@@ -71,6 +69,7 @@ def assign_mechanic(ticket_id, mechanic_id):
     # Assign the mechanic to the service ticket:
     ticket.mechanics.append(mechanic) # mechanics list
     db.session.commit()
+    # cache.clear()
         
     return service_ticket_schema.jsonify(ticket), 200
     
@@ -97,5 +96,58 @@ def remove_mechanic(ticket_id, mechanic_id):
     # Remove the mechanic from the service ticket:
     ticket.mechanics.remove(mechanic) # mechanics list
     db.session.commit()
+    # cache.clear()
         
     return service_ticket_schema.jsonify(ticket), 200
+
+
+# = 5. Edit mechanics assigned to a service ticket (PUT):
+@service_tickets_bp.route("/<int:ticket_id>/edit", methods=['PUT'])
+def edit_ticket(ticket_id):
+    try:
+        ticket_edits = edit_ticket_schema.load(request.get_json() or {})
+    except ValidationError as e:
+        return jsonify(e.messages), 400
+    
+    if not isinstance(ticket_edits, dict):
+        return jsonify({"error": "Invalid request data."}), 400
+    
+    query = select(Service_Ticket).where(Service_Ticket.id == ticket_id)
+    ticket = db.session.execute(query).scalars().first()
+    
+    if not ticket:
+        return jsonify({"error" : "Service ticket not found."}), 404
+    
+            
+    # Add mechanics to a service ticket:
+    for mechanic_id in ticket_edits.get("add_ids", []):
+        query = select(Mechanic).where(Mechanic.id == mechanic_id)
+        mechanic = db.session.execute(query).scalars().first()
+        
+        if mechanic and mechanic not in ticket.mechanics:
+            ticket.mechanics.append(mechanic)
+            
+    
+    # Remove mechanics from a service ticket:
+    for mechanic_id in ticket_edits.get("remove_ids", []):
+        query = select(Mechanic).where(Mechanic.id == mechanic_id)
+        mechanic = db.session.execute(query).scalars().first()
+        
+        if mechanic and mechanic in ticket.mechanics:
+            ticket.mechanics.remove(mechanic)
+
+    
+    db.session.commit()
+    # cache.clear() # clear caching so requests show updated data. 
+    
+    return return_ticket_schema.jsonify(ticket), 200
+
+ 
+    
+    
+    
+    
+
+    
+
+

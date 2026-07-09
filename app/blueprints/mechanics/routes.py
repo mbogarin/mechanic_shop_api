@@ -2,7 +2,7 @@ from flask import jsonify, request
 from marshmallow import ValidationError
 from sqlalchemy import select
 
-from .schemas import mechanic_schema, mechanics_schema
+from .schemas import mechanic_schema, mechanics_schema, mechanic_ticket_count_schema
 from app.models import Mechanic, db
 from . import mechanics_bp
 
@@ -65,3 +65,16 @@ def delete_mechanic(mechanic_id):
     db.session.commit()
     
     return jsonify({"message":f"Mechanic id: {mechanic_id}, successfully deleted."}), 200
+
+
+# = 5. Get mechanics in order by most service tickets:
+@mechanics_bp.route("/most-tickets", methods=['GET'])
+def get_mechanics_by_most_tickets():
+    query = select(Mechanic)
+    mechanics = db.session.execute(query).scalars().all()
+    
+    sorted_mechanics = sorted(mechanics, key=lambda mechanic: len(mechanic.service_tickets), reverse=True) # Sorting w/ lambda functions
+    
+    # Show ticket count:
+    
+    return mechanic_ticket_count_schema.jsonify(sorted_mechanics), 200

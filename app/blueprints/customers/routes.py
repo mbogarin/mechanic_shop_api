@@ -4,7 +4,7 @@ from flask import jsonify, request
 from marshmallow import ValidationError
 from sqlalchemy import select
 
-from .schemas import customer_schema, customers_schema, login_schema
+from .schemas import customer_schema, customers_schema, login_schema, paginated_customers_schema
 from app.models import Customer, Service_Ticket, db
 from . import customers_bp
 from app.blueprints.service_tickets.schemas import service_tickets_schema
@@ -36,10 +36,16 @@ def create_customer():
 # = 2. Retrieve all customers: (GET)
 @customers_bp.route("/", methods=["GET"])
 def get_customers():
-    query = select(Customer)
-    customers = db.session.execute(query).scalars().all()
     
-    return customers_schema.jsonify(customers), 200
+    # Pagination:
+    page = request.args.get("page", 1, type=int)
+    per_page = request.args.get("per_page", 5, type=int)
+    
+    query = select(Customer)
+    customers = db.paginate(query, page=page, per_page=per_page)
+    return paginated_customers_schema.jsonify(customers), 200
+
+
 
 
 # = 3. Retrieve specific customer: (GET)
@@ -121,7 +127,7 @@ def login():
         return jsonify({"message": 'Invalid email or password! Please try again.'}), 401
     
       
-# Get customer's service tickets after Login: (GET) - protected route
+# Get Service Tickets for Authorized Customer: (GET) - protected route
 @customers_bp.route("/my-tickets", methods=["GET"])
 @token_required # Bearer token authentication
 def get_my_tickets(customer_id):
