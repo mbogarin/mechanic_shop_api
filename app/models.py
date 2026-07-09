@@ -10,7 +10,7 @@ class Base(DeclarativeBase):
 db = SQLAlchemy(model_class=Base)
 
 
-# = ASSOCIATION TABLE: 
+# SERVICE-MECHANIC JUNCTION TABLE: 
 service_mechanic = db.Table(
     'service_mechanic', 
     Base.metadata, 
@@ -21,7 +21,7 @@ service_mechanic = db.Table(
 
 
 
-# = 1. CUSTOMERS:
+# CUSTOMERS:
 class Customer(Base):
     __tablename__ = 'customers'
     
@@ -38,7 +38,7 @@ class Customer(Base):
 
 
 
-# = 2. SERVICE TICKETS:
+# SERVICE TICKETS:
 class Service_Ticket(Base):
     __tablename__ = 'service_tickets'
     
@@ -57,7 +57,7 @@ class Service_Ticket(Base):
     
 
 
-# = 3. MECHANICS:
+# 3. MECHANICS:
 class Mechanic(Base):
     __tablename__ = 'mechanics'
     
@@ -71,3 +71,14 @@ class Mechanic(Base):
     # Many-to-Many relationship w/ Service Tickets:
     service_tickets: Mapped[List['Service_Ticket']] = relationship(secondary=service_mechanic, back_populates='mechanics')
     
+    
+    
+# = 4. INVENTORY:
+class Inventory(Base):
+    __tablename__ = "inventory"
+    
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(db.String(250), nullable=False)
+    price: Mapped[float] = mapped_column(db.Float, nullable=False)
+
+

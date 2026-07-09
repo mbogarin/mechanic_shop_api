@@ -34,9 +34,7 @@ def create_service_ticket():
 
 # = 2. Retrieve all service tickets (GET):
 @service_tickets_bp.route("/", methods=["GET"])
-
-# @cache.cached(timeout=60) # Set caching timeout to 60 seconds to get service tickets at a faster rate.
-
+@cache.cached(timeout=60) # Cache service ticket list for faster repeated GET requests.
 def get_service_tickets():
     query = select(Service_Ticket)
     tickets = db.session.execute(query).scalars().all()
@@ -49,9 +47,7 @@ def get_service_tickets():
 
 # = 3. Assign a mechanic to a service ticket (PUT): 
 @service_tickets_bp.route("/<int:ticket_id>/assign-mechanic/<int:mechanic_id>", methods=["PUT"])
-
-# @limiter.limit("5 per hour") # limit this request to 5x per hour to keep from assigning too many mechanics to service ticket. 
-
+@limiter.limit("5 per hour") # Limit repeated mechanic assignment requests.
 def assign_mechanic(ticket_id, mechanic_id):
     ticket = db.session.get(Service_Ticket, ticket_id)
     if not ticket: 
@@ -69,7 +65,7 @@ def assign_mechanic(ticket_id, mechanic_id):
     # Assign the mechanic to the service ticket:
     ticket.mechanics.append(mechanic) # mechanics list
     db.session.commit()
-    # cache.clear()
+    cache.clear()
         
     return service_ticket_schema.jsonify(ticket), 200
     
@@ -96,7 +92,7 @@ def remove_mechanic(ticket_id, mechanic_id):
     # Remove the mechanic from the service ticket:
     ticket.mechanics.remove(mechanic) # mechanics list
     db.session.commit()
-    # cache.clear()
+    cache.clear()
         
     return service_ticket_schema.jsonify(ticket), 200
 
@@ -138,7 +134,7 @@ def edit_ticket(ticket_id):
 
     
     db.session.commit()
-    # cache.clear() # clear caching so requests show updated data. 
+    cache.clear() # clear caching so requests show updated data. 
     
     return return_ticket_schema.jsonify(ticket), 200
 
