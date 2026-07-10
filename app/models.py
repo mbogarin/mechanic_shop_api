@@ -61,7 +61,7 @@ class Service_Ticket(Base):
     # Many-to-Many relationship w/ Mechanics:
     mechanics: Mapped[List['Mechanic']] = relationship(secondary=service_mechanic, back_populates='service_tickets')
     
-    # Many-to-many relationship w/ Inventory:
+    # Many-to-Many relationship w/ Inventory:
     parts: Mapped[List["Inventory"]] = relationship(
         secondary=service_inventory,
         back_populates="service_tickets"
@@ -94,7 +94,7 @@ class Inventory(Base):
     price: Mapped[float] = mapped_column(db.Float, nullable=False)
 
 
-    # Many-to-many relationship w/ Service Tickets:
+    # Many-to-Many relationship w/ Service Tickets:
     service_tickets: Mapped[List["Service_Ticket"]] = relationship(
         secondary=service_inventory, back_populates="parts"
     )
