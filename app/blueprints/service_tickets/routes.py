@@ -3,7 +3,7 @@ from marshmallow import ValidationError
 from sqlalchemy import select
 
 from .schemas import service_ticket_schema, service_tickets_schema, edit_ticket_schema, return_ticket_schema
-from app.models import Service_Ticket, Customer, Mechanic, db
+from app.models import db, Service_Ticket, Customer, Mechanic, Inventory
 from . import service_tickets_bp
 
 from app.extensions import limiter, cache
@@ -11,7 +11,7 @@ from app.extensions import limiter, cache
 
 # SERVICE TICKET ROUTES:
 
-# = 1. Create new service ticket (POST):
+# 1. (POST): CREATE SERVICE TICKET
 @service_tickets_bp.route("/", methods=["POST"])
 def create_service_ticket():
     try:
@@ -32,7 +32,7 @@ def create_service_ticket():
 
 
 
-# = 2. Retrieve all service tickets (GET):
+# 2. (GET): GET ALL SERVICE TICKETS
 @service_tickets_bp.route("/", methods=["GET"])
 @cache.cached(timeout=60) # Cache service ticket list for faster repeated GET requests.
 def get_service_tickets():
@@ -45,7 +45,7 @@ def get_service_tickets():
 
 # Many-to-Many relationship: Service ticket & Mechanic
 
-# = 3. Assign a mechanic to a service ticket (PUT): 
+# 3. (PUT): ASSIGN MECHANIC TO SERVICE TICKET
 @service_tickets_bp.route("/<int:ticket_id>/assign-mechanic/<int:mechanic_id>", methods=["PUT"])
 @limiter.limit("5 per hour") # Limit repeated mechanic assignment requests.
 def assign_mechanic(ticket_id, mechanic_id):
@@ -71,7 +71,7 @@ def assign_mechanic(ticket_id, mechanic_id):
     
     
 
-# = 4. Remove mechanic from service ticket (PUT): 
+# 4. (PUT): REMOVE MECHANIC FROM SERVICE TICKET
 @service_tickets_bp.route("/<int:ticket_id>/remove-mechanic/<int:mechanic_id>", methods=["PUT"])
 def remove_mechanic(ticket_id, mechanic_id):
     
@@ -87,7 +87,7 @@ def remove_mechanic(ticket_id, mechanic_id):
     
     # Check if the mechanic is not already assigned to this service ticket:
     if mechanic not in ticket.mechanics:
-        return jsonify({"message":f"Mechanic is not assigned to this service ticket."}), 200
+        return jsonify({"message": f"Mechanic {mechanic.name} is not assigned to this service ticket."}), 200
     
     # Remove the mechanic from the service ticket:
     ticket.mechanics.remove(mechanic) # mechanics list
@@ -97,7 +97,7 @@ def remove_mechanic(ticket_id, mechanic_id):
     return service_ticket_schema.jsonify(ticket), 200
 
 
-# = 5. Edit mechanics assigned to a service ticket (PUT):
+# 5. (PUT): EDIT SERVICE TICKET
 @service_tickets_bp.route("/<int:ticket_id>/edit", methods=['PUT'])
 def edit_ticket(ticket_id):
     try:
@@ -112,10 +112,10 @@ def edit_ticket(ticket_id):
     ticket = db.session.execute(query).scalars().first()
     
     if not ticket:
-        return jsonify({"error" : "Service ticket not found."}), 404
+        return jsonify({"error": "Service ticket not found."}), 404
     
             
-    # Add mechanics to a service ticket:
+    # ADD mechanics to a service ticket:
     for mechanic_id in ticket_edits.get("add_ids", []):
         query = select(Mechanic).where(Mechanic.id == mechanic_id)
         mechanic = db.session.execute(query).scalars().first()
@@ -124,7 +124,7 @@ def edit_ticket(ticket_id):
             ticket.mechanics.append(mechanic)
             
     
-    # Remove mechanics from a service ticket:
+    # REMOVE mechanics from a service ticket:
     for mechanic_id in ticket_edits.get("remove_ids", []):
         query = select(Mechanic).where(Mechanic.id == mechanic_id)
         mechanic = db.session.execute(query).scalars().first()
@@ -138,8 +138,27 @@ def edit_ticket(ticket_id):
     
     return return_ticket_schema.jsonify(ticket), 200
 
- 
+
+# = 6. (PUT): ADD INVENTORY PART TO SERVICE TICKET
+@service_tickets_bp.route("/<int:ticket_id>/add-part/<int:part_id>", methods=["PUT"])
+def add_part_to_ticket(ticket_id, part_id):
+    ticket = db.session.get(Service_Ticket, ticket_id)
+    part = db.session.get(Inventory, part_id)
     
+    if not ticket:
+        return jsonify({"message": "Service ticket not found."}), 404
+    
+    if not part: 
+        return jsonify({"message": "Inventory part not found."}), 404
+    
+    if part in ticket.parts:
+        return jsonify({"message": f"{part.name} is already added to this service ticket."}), 400
+    
+    ticket.parts.append(part)
+    db.session.commit()
+    cache.clear()
+    
+    return service_ticket_schema.jsonify(ticket), 200
     
     
     
