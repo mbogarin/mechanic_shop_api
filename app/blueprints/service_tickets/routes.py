@@ -9,9 +9,8 @@ from . import service_tickets_bp
 from app.extensions import limiter, cache
 
 
-# SERVICE TICKET ROUTES:
-
-# 1. (POST): CREATE SERVICE TICKET
+# = SERVICE TICKET ROUTES:
+# 1. (POST): CREATE NEW SERVICE TICKET
 @service_tickets_bp.route("/", methods=["POST"])
 def create_service_ticket():
     try:
@@ -19,10 +18,17 @@ def create_service_ticket():
     except ValidationError as e:
         return jsonify(e.messages), 400
     
-    # Check if customer exists:
     customer = db.session.get(Customer, ticket_data["customer_id"])
+    
     if not customer: 
         return jsonify({"error": "Customer not found."}), 404
+    
+    # Prevent duplicate VINs since VIN must be unique in the database:
+    query = select(Service_Ticket).where(Service_Ticket.VIN == ticket_data["VIN"])
+    existing_ticket = db.session.execute(query).scalars().first()
+    
+    if existing_ticket:
+        return jsonify({"error": "VIN is already associated with another service ticket."}), 400
     
     new_ticket = Service_Ticket(**ticket_data)
     db.session.add(new_ticket)
@@ -139,7 +145,8 @@ def edit_ticket(ticket_id):
     return return_ticket_schema.jsonify(ticket), 200
 
 
-# = 6. (PUT): ADD INVENTORY PART TO SERVICE TICKET
+
+# 6. (PUT): ADD INVENTORY PART TO SERVICE TICKET
 @service_tickets_bp.route("/<int:ticket_id>/add-part/<int:part_id>", methods=["PUT"])
 def add_part_to_ticket(ticket_id, part_id):
     ticket = db.session.get(Service_Ticket, ticket_id)

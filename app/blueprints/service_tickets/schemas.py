@@ -14,7 +14,7 @@ class ServiceTicketSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = Service_Ticket
         include_fk = True # foreign key
-        fields = ("id", "service_date", "service_desc", "customer_id", "customer", "mechanics", "parts")
+        fields = ("id", "VIN", "service_date", "service_desc", "customer_id", "customer", "mechanics", "parts")
         
         
 # Edit Ticket schema:
