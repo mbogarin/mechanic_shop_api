@@ -7,7 +7,7 @@ from flask import request, jsonify
 from functools import wraps
 
 
-# = Token Authentication:
+# Token Authentication:
 
 SECRET_KEY = "secret key"
 

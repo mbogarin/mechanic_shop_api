@@ -40,7 +40,7 @@ def create_service_ticket():
 
 # 2. (GET) GET ALL SERVICE TICKETS:
 @service_tickets_bp.route("/", methods=["GET"])
-@cache.cached(timeout=60) # Cache for faster repeated GET requests.
+@cache.cached(timeout=60)  # Cache for faster repeated GET requests.
 def get_service_tickets():
     query = select(Service_Ticket)
     tickets = db.session.execute(query).scalars().all()
@@ -50,7 +50,7 @@ def get_service_tickets():
 
 # 3. (PUT) ASSIGN MECHANIC TO SERVICE TICKET:
 @service_tickets_bp.route("/<int:ticket_id>/assign-mechanic/<int:mechanic_id>", methods=["PUT"])
-@limiter.limit("5 per hour") # Limit repeated mechanic assignment requests.
+@limiter.limit("5 per hour")  # Limit repeated mechanic assignment requests.
 def assign_mechanic(ticket_id, mechanic_id):
     ticket = db.session.get(Service_Ticket, ticket_id)
     
@@ -61,11 +61,10 @@ def assign_mechanic(ticket_id, mechanic_id):
     if not mechanic:
         return jsonify({"error": "Mechanic not found."}), 404
     
-    # Check if the mechanic is already assigned to this service ticket:
     if mechanic in ticket.mechanics:
         return jsonify({"message":"Mechanic is already assigned to this service ticket."}), 200
     
-    ticket.mechanics.append(mechanic) # mechanics list
+    ticket.mechanics.append(mechanic) 
     db.session.commit()
     cache.clear()
         
@@ -84,7 +83,6 @@ def remove_mechanic(ticket_id, mechanic_id):
     if not mechanic:
         return jsonify({"error": "Mechanic not found."}), 404
     
-    # Check if the mechanic is not already assigned to this service ticket:
     if mechanic not in ticket.mechanics:
         return jsonify({"message": f"Mechanic {mechanic.name} is not assigned to this service ticket."}), 200
     
@@ -97,7 +95,7 @@ def remove_mechanic(ticket_id, mechanic_id):
 
 # 5. (PUT) EDIT MECHANICS ON A SERVICE TICKET:
 @service_tickets_bp.route("/<int:ticket_id>/edit", methods=['PUT'])
-def edit_ticket(ticket_id):
+def edit_ticket_mechanics(ticket_id):
     try:
         ticket_edits = edit_ticket_schema.load(request.get_json() or {})
     except ValidationError as e:

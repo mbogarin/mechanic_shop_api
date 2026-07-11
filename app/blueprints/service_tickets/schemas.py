@@ -15,9 +15,10 @@ class ServiceTicketSchema(ma.SQLAlchemyAutoSchema):
         model = Service_Ticket
         include_fk = True # foreign key
         fields = ("id", "VIN", "service_date", "service_desc", "customer_id", "customer", "mechanics", "parts")
-        
-        
-# Edit Ticket schema:
+
+ 
+
+# Edit Ticket schema: (custom schema)
 class EditTicketSchema(ma.Schema):
     add_ids = fields.List(fields.Int(), load_default=[])
     remove_ids = fields.List(fields.Int(), load_default=[])

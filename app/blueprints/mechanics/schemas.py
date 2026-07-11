@@ -7,7 +7,8 @@ class MechanicSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = Mechanic
         
-# Mechanic Ticket Count schema:
+
+# Mechanic Ticket Count (custom schema):
 class MechanicTicketCountSchema(MechanicSchema):
     ticket_count = fields.Method("get_ticket_count")
     

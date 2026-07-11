@@ -68,9 +68,9 @@ def delete_mechanic(mechanic_id):
     return jsonify({"message":f"{mechanic.name} was successfully deleted."}), 200
 
 
-# = 5. Get mechanics in order by most service tickets:
+# 5. (GET) RANK MECHANICS BY MOST TICKETS:
 @mechanics_bp.route("/most-tickets", methods=['GET'])
-def get_mechanics_by_most_tickets():
+def rank_mechanics_by_most_tickets():
     query = select(Mechanic)
     mechanics = db.session.execute(query).scalars().all()
     

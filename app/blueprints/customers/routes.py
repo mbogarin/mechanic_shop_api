@@ -1,6 +1,7 @@
 from flask import jsonify, request
 from marshmallow import ValidationError
 from sqlalchemy import select
+
 from app.utils.util import encode_token, token_required
 
 from . import customers_bp
@@ -98,7 +99,7 @@ def delete_customer(customer_id):
 
 # = TOKEN AUTHENTICATION ROUTES:
 
-# 1. (POST) LOGIN: Protected route
+# 6. (POST) LOGIN: Protected route
 @customers_bp.route("/login", methods=["POST"])
 def login(): 
     try:
@@ -127,7 +128,7 @@ def login():
         return jsonify({"message": 'Invalid email or password! Please try again.'}), 401
     
       
-# 2. (GET) GET SERVICE TICKETS FOR AUTHORIZED CUSTOMER: protected route
+# 7. (GET) GET SERVICE TICKETS FOR AUTHORIZED CUSTOMER: protected route
 @customers_bp.route("/my-tickets", methods=["GET"])
 @token_required # Bearer token authentication
 def get_my_tickets(customer_id):
