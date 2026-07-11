@@ -99,6 +99,10 @@ class MechanicRouteTests(unittest.TestCase):
                 self.mechanic_id
             )
             
+            # Confirm mechanic still exists before accessing its attributes:
+            self.assertIsNotNone(updated_mechanic)
+            assert updated_mechanic is not None
+            
             self.assertEqual(
                 updated_mechanic.name,
                 "Updated Mechanic"

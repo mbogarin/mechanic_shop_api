@@ -78,7 +78,7 @@ class ServiceTicketRouteTests(unittest.TestCase):
             db.engine.dispose()
 
     # = TESTS:
-    # Create service ticket:
+    # = Create service ticket:
     def test_create_service_ticket(self):
         ticket_payload = {
             "VIN": "2C4RC1BG5KR654321",
@@ -95,7 +95,8 @@ class ServiceTicketRouteTests(unittest.TestCase):
         self.assertEqual(response_data["service_desc"], "Oil change")
         self.assertEqual(response_data["customer_id"], self.customer_id)
     
-    # Get all service tickets:
+    
+    # = Get all service tickets:
     def test_get_all_service_tickets(self):
         response = self.client.get("/service-tickets/")
         response_data = response.get_json()
@@ -106,7 +107,8 @@ class ServiceTicketRouteTests(unittest.TestCase):
         self.assertEqual(response_data[0]["id"], self.ticket_id)
         self.assertEqual(response_data[0]["VIN"], "1HGCM82633A123456")
     
-    # Assign mechanic to service ticket:
+    
+    # = Assign mechanic to service ticket:
     def test_assign_mechanic_to_service_ticket(self):
         response = self.client.put(f"/service-tickets/{self.ticket_id}/assign-mechanic/{self.mechanic_id}")
         response_data = response.get_json()
@@ -123,15 +125,41 @@ class ServiceTicketRouteTests(unittest.TestCase):
                 self.ticket_id
             )
             
-            assigned_ids = [mechanic.id for mechanic in updated_ticket.mechanics]
-            self.assertIn(self.mechanic_id, assigned_ids)
+            self.assertIsNotNone(updated_ticket)
+            assert updated_ticket is not None
+            
+            assigned_ids = [
+                mechanic.id
+                for mechanic in updated_ticket.mechanics
+            ]
+            
+            self.assertIn(
+                self.mechanic_id,
+                assigned_ids
+                )
     
-    # Remove mechanic from service ticket:
+    # = Remove mechanic from service ticket:
     def test_remove_mechanic_from_service_ticket(self):
+        
         # Assign mechanic before testing its removal:
         with self.app.app_context():
-            ticket = db.session.get(Service_Ticket, self.ticket_id)
-            mechanic = db.session.get(Mechanic, self.mechanic_id)
+            ticket = db.session.get(
+                Service_Ticket,
+                self.ticket_id
+            )
+            
+            mechanic = db.session.get(
+                Mechanic,
+                self.mechanic_id
+            )
+            
+            # Confirm both records before creating relationship:
+            self.assertIsNotNone(ticket)
+            self.assertIsNone(mechanic)
+            
+            assert ticket is not None
+            assert mechanic is not None
+            
             ticket.mechanics.append(mechanic)
             db.session.commit()
             
@@ -158,15 +186,40 @@ class ServiceTicketRouteTests(unittest.TestCase):
                 self.ticket_id
             )
             
-            assigned_ids = [mechanic.id for mechanic in updated_ticket.mechanics]
-            self.assertNotIn(self.mechanic_id, assigned_ids)
+            # Confirm ticket still exists before checking relationship:
+            self.assertIsNotNone(updated_ticket)
+            assert updated_ticket is not None
+            
+            assigned_ids = [
+                mechanic.id
+                for mechanic in updated_ticket.mechanics
+            ]
+            
+            self.assertNotIn(
+                self.mechanic_id,
+                assigned_ids
+            )
     
-    # Edit service ticket mechanics:
+    
+    # = Edit service ticket mechanics:
     def test_edit_service_ticket_mechanics(self):
         # Assign 2nd mechanic so route can remove them:
         with self.app.app_context():
-            ticket = db.session.get(Service_Ticket, self.ticket_id)
-            second_mechanic = db.session.get(Mechanic, self.second_mechanic_id)
+            ticket = db.session.get(
+                Service_Ticket,
+                self.ticket_id
+                )
+            
+            second_mechanic = db.session.get(
+                Mechanic,
+                self.second_mechanic_id)
+            
+            self.assertIsNotNone(ticket)
+            self.assertIsNone(second_mechanic)
+            
+            assert ticket is not None
+            assert second_mechanic is not None
+            
             ticket.mechanics.append(second_mechanic)
             db.session.commit()
             
@@ -189,7 +242,7 @@ class ServiceTicketRouteTests(unittest.TestCase):
         self.assertNotIn(self.second_mechanic_id, returned_mechanic_ids)
     
     
-    # Add inventory part to service ticket:
+    # = Add inventory part to service ticket:
     def test_add_inventory_part_to_service_ticket(self):
         response = self.client.put(f"/service-tickets/{self.ticket_id}/add-part/{self.part_id}")
         response_data = response.get_json()
@@ -212,8 +265,18 @@ class ServiceTicketRouteTests(unittest.TestCase):
                 self.ticket_id
             )
             
-            part_ids = [part.id for part in updated_ticket.parts]
-            self.assertIn(self.part_id, part_ids)
+            self.assertIsNotNone(updated_ticket)
+            assert updated_ticket is not None
+            
+            part_ids = [
+                part.id
+                for part in updated_ticket.parts
+            ]
+            
+            self.assertIn(
+                self.part_id,
+                part_ids
+            )
         
     
 if __name__ == "__main__":
