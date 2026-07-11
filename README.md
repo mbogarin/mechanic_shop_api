@@ -10,11 +10,53 @@ GitHub: https://github.com/mbogarin
 
 ## Project Description
 
-The Mechanic Shop API is a RESTful backend application built with Flask, SQLAlchemy, Marshmallow, and MySQL. It demonstrates relational database design, CRUD operations, the Application Factory Pattern, Flask Blueprints, and Marshmallow serialization.
+The Mechanic Shop API is a RESTful backend application built with Flask, SQLAlchemy, Marshmallow, and MySQL. The project follows the Application Factory Pattern and uses Flask Blueprints to organize resources into modular components.
 
-The API manages customers, mechanics, service tickets, and inventory while supporting many-to-many relationships between mechanics, inventory, and service tickets. This advanced version expands the original project by introducing JWT authentication, protected routes, rate limiting, response caching, and advanced database queries, making the API more secure, scalable, and production-ready.
+### What the API Does
 
-### Features:
+The API manages customers, mechanics, service tickets, and inventory through RESTful endpoints. It supports CRUD operations, many-to-many relationships, customer authentication, and inventory management for a mechanic shop.
+
+### How It Was Enhanced
+
+This advanced version expands the original API by introducing JWT authentication, protected routes, rate limiting, response caching, advanced database queries, and inventory management, making the application more secure, scalable, and production-ready.
+
+### How It's Documented
+
+The project includes interactive Swagger documentation for every endpoint, complete with request parameters, payload definitions, response definitions, authentication requirements, and example request and response data.
+
+### How It's Tested
+
+A comprehensive unittest suite validates every API resource with both positive and negative test cases, helping ensure endpoint functionality and reliability.
+
+---
+
+## Table of Contents
+
+- [Project Description](#project-description)
+
+- [Features](#features)
+
+- [Tech Stack](#tech-stack)
+
+- [Installation & Setup](#installation--setup)
+
+- [API Endpoints](#api-endpoints)
+
+- [Project Structure](#project-structure)
+
+- [Usage](#usage)
+
+- [API Documentation](#api-documentation)
+
+- [Testing](#testing)
+
+- [Roadmap](#roadmap)
+
+- [Collaborators](#collaborators)
+
+---
+
+## Features
 
 ### Core API Features
 
@@ -66,62 +108,48 @@ The API manages customers, mechanics, service tickets, and inventory while suppo
 
 - Customer pagination
 
-- Mechanic ranking based on completed service tickets
+- Retrieve mechanics ranked by the number of assigned service tickets
 
 - Update mechanic assignments through a single endpoint
 
-- Many-to-many relationship management between:
+- Many-to-many relationship management between
     - Mechanics and Service Tickets
 
     - Inventory and Service Tickets
 
-### Technologies Used:
+### API Documentation
+
+- Interactive Swagger UI
+- Endpoint documentation
+- Request/response examples
+- Payload definitions
+- Response definitions
+
+### Testing
+
+- unittest framework
+- One test file per blueprint
+- Positive test cases
+- Negative test cases
+- Full endpoint coverage
+
+### Tech Stack
 
 - Flask
-
 - Flask-Caching
-
 - Flask-Limiter
-
 - Flask-Marshmallow
-
+- Flask-Swagger
+- Flask-Swagger-UI
 - Flask-SQLAlchemy
-
 - Marshmallow
-
 - MySQL
-
 - Postman
-
 - PyMySQL
-
 - Python
-
 - python-jose
-
 - SQLAlchemy
-
----
-
-## Table of Contents
-
-- [Project Description](#project-description)
-
-- [Features](#features)
-
-- [Technologies Used](#technologies-used)
-
-- [Installation & Setup](#installation--setup)
-
-- [API Endpoints](#api-endpoints)
-
-- [Project Structure](#project-structure)
-
-- [Usage](#usage)
-
-- [Roadmap](#roadmap)
-
-- [Collaborators](#collaborators)
+- unittest
 
 ---
 
@@ -283,18 +311,24 @@ mechanic_shop_api/
 │   │   ├── inventory/
 │   │   ├── mechanics/
 │   │   └── service_tickets/
-│   │
+│   ├── static/
+│   │   └── swagger.yaml
 │   ├── utils/
-│   │   └── utils.py
-│   │
+│   │   └── util.py
 │   ├── extensions.py
 │   ├── models.py
 │   └── __init__.py
 │
-├── config.py
+├── tests/
+│   ├── test_customers.py
+│   ├── test_inventory.py
+│   ├── test_mechanics.py
+│   └── test_service_tickets.py
+│
 ├── app.py
-├── requirements.txt
+├── config.py
 ├── README.md
+├── requirements.txt
 └── mechanic_shop.postman_collection.json
 ```
 
@@ -304,25 +338,59 @@ mechanic_shop_api/
 
 Use Postman or another API testing tool to interact with the API.
 
-A typical workflow is:
+1. Register or log in as a customer.
+2. Authenticate using a JWT.
+3. Interact with protected API endpoints.
+4. Manage mechanics, service tickets, and inventory.
+5. View interactive API documentation through Swagger UI.
+6. Run the unittest suite to verify endpoint functionality.
 
-1. Register a customer.
+---
 
-2. Log in to receive a JWT.
+## API Documentation
 
-3. Use the Bearer token to access protected endpoints.
+Interactive API documentation is available through Swagger UI, allowing developers to explore and test API endpoints while viewing request parameters, authentication requirements, payload definitions, and example responses.
 
-4. Create mechanics and inventory parts.
+The documentation includes:
 
-5. Create a service ticket.
+- endpoint summaries
 
-6. Assign mechanics to the service ticket.
+- request parameters
 
-7. Add inventory parts to the service ticket.
+- payload definitions
 
-8. Retrieve customer tickets using the protected endpoint.
+- response definitions
 
-9. Use advanced query endpoints such as mechanic rankings and customer pagination.
+- authentication requirements
+
+- example request and response bodies
+
+---
+
+## Testing
+
+The project includes a comprehensive unittest suite to verify API functionality. Each blueprint has its own dedicated test module, making the test suite easier to organize and maintain as the API grows.
+
+Tests include:
+
+- Customer endpoints
+
+- Mechanic endpoints
+
+- Service Ticket endpoints
+
+- Inventory endpoints
+
+- Positive test cases
+
+- Negative test cases
+
+Run all tests with:
+
+```bash
+
+python -m unittest discover tests
+```
 
 ---
 
@@ -330,21 +398,17 @@ A typical workflow is:
 
 Potential future improvements include:
 
-- Role-based authentication for mechanics and administrators
+- CI/CD pipeline
 
-- Inventory quantity tracking through junction models
+- Automated API testing in GitHub Actions
 
-- Search and filtering across resources
+- Docker support
 
-- Service ticket status tracking
+- Role-based authorization
 
-- Automated unit and integration testing
+- Test coverage reporting
 
-- API documentation using Swagger/OpenAPI
-
-- Docker containerization
-
-- CI/CD pipeline for automated testing and deployment
+- OpenAPI 3.0 migration
 
 ---
 
@@ -354,4 +418,6 @@ This project was developed independently as part of the Coding Temple Backend So
 
 ### Credits
 
-- Classmates and mentors at Coding Temple
+- Coding Temple instructors
+- Coding Temple mentors
+- Coding Temple classmates
