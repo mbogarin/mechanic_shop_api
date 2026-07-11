@@ -1,0 +1,94 @@
+# = Initialization:
+swagger: "2.0"
+info:
+    title: "Mechanic Shop API"
+    description: "REST API for managing customers, mechanics, service tickets, and inventory parts for a mechanic shop. Protected customer routes require a JWT Bearer token returned by the customer login endpoint."
+    version: "1.0.0"
+host: "127.0.0.1:5000"
+schemes:
+    - "http"
+consumes:
+    - "application/json"
+produces:
+    - "application/json"
+
+tags:
+    - name: "Customers"
+      description: "Customer accounts, authentication, and customer service tickets"
+    - name: "Mechanics"
+      description: "Mechanic management and ticket rankings"
+    - name: "Service Tickets"
+      description: "Service ticket creation and relationship management"
+    - name: "Inventory"
+      description: "Inventory part management"
+
+# = Authentication/Authorization:
+securityDefinitions:
+    bearerAuth:
+        type: apiKey
+        name: Authorization
+        in: header
+
+# = Paths:
+paths:
+
+# > Customers endpoints:
+# 1. Create customers:
+
+# 2. Get all customers:
+
+# 3. Update customer:
+
+# 4. Delete customer:
+
+# 5. Get single customer:
+
+# 6. Login credentials:
+
+# 7. Get customer tickets:
+
+# > Mechanics endpoints:
+# 1. Create mechanic:
+
+# 2. Get all mechanics:
+
+# 3. Update mechanic:
+
+# 4. Delete mechanic:
+
+# 5. Rank mechanics by most tickets assigned:
+
+# > Inventory endpoints:
+# 1. Create inventory part:
+
+# 2. Get all inventory parts:
+
+# 3. Get inventory part:
+
+# 4. Update inventory part:
+
+# 5. Delete inventory part:
+
+# > Service Tickets endpoints:
+# 1. Create service ticket:
+
+# 2. Get all service tickets:
+
+# 3. Assign service ticket mechanics:
+
+# 4. Remove service ticket mechanics:
+
+# 5. Add/Remove service ticket mechanics:
+
+# 6. Add inventory part to service ticket:
+
+# = Definitions:
+definitions:
+
+# > Customers:
+
+# > Mechanics:
+
+# > Inventory:
+
+# > Service Tickets:
