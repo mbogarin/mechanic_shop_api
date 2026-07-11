@@ -4,7 +4,6 @@ from app import create_app
 from app.models import db, Customer
 from app.utils.util import encode_token
 
-# Customer Route Tests:
 class CustomerRouteTests(unittest.TestCase):  
     def setUp(self):
         # Create flask app using isolated testing config:
@@ -28,7 +27,7 @@ class CustomerRouteTests(unittest.TestCase):
             db.session.add(self.customer)
             db.session.commit()
         
-            # Resuable values:
+            # Reusable values:
             self.customer_id = self.customer.id        
             self.token = encode_token(self.customer_id)
             
@@ -42,8 +41,8 @@ class CustomerRouteTests(unittest.TestCase):
             db.engine.dispose()
         
         
-    # TESTS:
     # = Create customer:
+    
     def test_create_customer(self):
         customer_payload = {
             "name": "Test Customer",
@@ -59,13 +58,14 @@ class CustomerRouteTests(unittest.TestCase):
         self.assertEqual(response_data["name"], "Test Customer")
         
     
-    # * Negative test    
+    # * Negative test:
+    
     def test_create_customer_duplicate_email(self):
-        """Test creating a customer w/ an existing email"""
+        """Test creating a customer with an existing email."""
         
         duplicate_customer ={
             "name": "Jane Doe",
-            "email": self.customer.email,  # Exising email
+            "email": self.customer.email,
             "phone": "222-333-4444",
             "password": "password123"
         }
@@ -84,8 +84,9 @@ class CustomerRouteTests(unittest.TestCase):
         
     
     # = Get all customers:
+    
     def test_get_all_customers(self):
-        response = self.client.get("/customers/?page=1&per_page=5") # pagination
+        response = self.client.get("/customers/?page=1&per_page=5")
         response_data = response.get_json()
         
         self.assertEqual(response.status_code, 200)
@@ -94,6 +95,7 @@ class CustomerRouteTests(unittest.TestCase):
   
     
     # = Get single customer:
+    
     def test_get_single_customer(self):
         response = self.client.get(f"/customers/{self.customer_id}")
         response_data = response.get_json()
@@ -103,7 +105,8 @@ class CustomerRouteTests(unittest.TestCase):
         self.assertEqual(response_data["email"], "test@email.com")
 
 
-    # * Negative test
+    # * Negative test:
+    
     def test_get_customer_not_found(self):
         """Test retrieving a customer that does not exist."""
 
@@ -111,9 +114,9 @@ class CustomerRouteTests(unittest.TestCase):
         self.assertEqual(response.status_code, 404)
         response_data = response.get_json()
         self.assertIn("error", response_data)
-        
-                
+                   
     # = Customer login:
+    
     def test_customer_login(self):
         credentials = {
             "email": "test@email.com",
@@ -127,8 +130,8 @@ class CustomerRouteTests(unittest.TestCase):
         self.assertEqual(response_data["status"], "success")
         self.assertIn("token", response_data)
         
-    
-     # * Negative test    
+    # * Negative test:
+     
     def test_customer_login_invalid_credentials(self):
         """Test customer login with an incorrect password."""
 
@@ -146,9 +149,9 @@ class CustomerRouteTests(unittest.TestCase):
             response_data["message"],
             "Invalid email or password! Please try again."
         )
-    
-    
+     
     # = Update customer:
+    
     def test_update_customer(self):
         update_payload = {
             "name": "Updated Customer",
@@ -159,7 +162,7 @@ class CustomerRouteTests(unittest.TestCase):
         
         headers = {
             "Authorization": f"Bearer {self.token}"
-            } # JWT token for protected route. 
+            }
         
         response = self.client.put("/customers/", json=update_payload, headers=headers)
         response_data = response.get_json()
@@ -167,9 +170,9 @@ class CustomerRouteTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response_data["name"], "Updated Customer")
         self.assertEqual(response_data["email"], "updated@test.com")
-        
-    
-     # * Negative test    
+          
+    # * Negative test:
+     
     def test_update_customer_missing_token(self):
         """Test updating a customer without a JWT token."""
 
@@ -188,9 +191,9 @@ class CustomerRouteTests(unittest.TestCase):
         self.assertEqual(response.status_code, 401)
         response_data = response.get_json()
         self.assertIn("message", response_data)        
-        
-        
+               
     # = Delete customer:
+    
     def test_delete_customer(self):
         headers = {
             "Authorization": f"Bearer {self.token}"
@@ -206,10 +209,10 @@ class CustomerRouteTests(unittest.TestCase):
         with self.app.app_context():
             deleted_customer = db.session.get(Customer, self.customer_id)
             
-            self.assertIsNone(deleted_customer) # Return none when customer no longer exists.
-            
-    
-     # * Negative test
+            self.assertIsNone(deleted_customer)
+               
+    # * Negative test
+     
     def test_delete_customer_missing_token(self):
         """Test deleting a customer without a JWT token."""
 
@@ -218,10 +221,9 @@ class CustomerRouteTests(unittest.TestCase):
         self.assertEqual(response.status_code, 401)
         response_data = response.get_json()
         self.assertIn("message", response_data)
-        
-            
-        
+              
     # = Get authenticated customer tickets:
+    
     def test_get_my_tickets(self):
         headers = {
             "Authorization": f"Bearer {self.token}"
@@ -232,10 +234,10 @@ class CustomerRouteTests(unittest.TestCase):
         
         self.assertEqual(response.status_code, 200)
         self.assertIsInstance(response_data, list)
-        self.assertEqual(response_data, []) # returns empty list (setUp customer has no tickets).
-        
-     
-      # * Negative test   
+        self.assertEqual(response_data, [])
+           
+    # * Negative test:
+      
     def test_get_my_tickets_missing_token(self):
         """Test retrieving customer tickets without a JWT token."""
 
@@ -243,9 +245,8 @@ class CustomerRouteTests(unittest.TestCase):
         
         self.assertEqual(response.status_code, 401)
         response_data = response.get_json()
-        self.assertIn("message", response_data)
-    
-    
-    
+        self.assertIn("message", response_data) 
+ 
+      
 if __name__ == "__main__":
     unittest.main()

@@ -4,7 +4,6 @@ from app import create_app
 from app.models import db, Mechanic, Customer
 
 
-# Mechanic Route Tests:
 class MechanicRouteTests(unittest.TestCase):
     
     def setUp(self):
@@ -32,7 +31,7 @@ class MechanicRouteTests(unittest.TestCase):
             db.session.add_all([self.customer, self.mechanic])
             db.session.commit()
             
-            # Resuable values:
+            # Reusable values:
             self.mechanic_id = self.mechanic.id
             
     # Remove active sessions & delete test tables after each test:
@@ -44,8 +43,9 @@ class MechanicRouteTests(unittest.TestCase):
             # Close all database connections held by SQLAlchemy:
             db.engine.dispose()
 
-    # TESTS:
+    
     # = Create mechanic:
+    
     def test_create_mechanic(self):
         mechanic_payload = {
             "name": "New Mechanic",
@@ -61,9 +61,9 @@ class MechanicRouteTests(unittest.TestCase):
         self.assertEqual(response_data["name"], "New Mechanic")
         self.assertEqual(response_data["email"], "newmechanic@test.com")
         self.assertEqual(response_data["salary"], 70000.00)
-      
     
     # = Get all mechanics:
+    
     def test_get_all_mechanics(self):
         response = self.client.get("/mechanics/")
         response_data = response.get_json()
@@ -74,8 +74,8 @@ class MechanicRouteTests(unittest.TestCase):
         self.assertEqual(response_data[0]["id"], self.mechanic_id)
         self.assertEqual(response_data[0]["email"], "mechanic@test.com")
         
-    
     # = Update mechanic:
+    
     def test_update_mechanic(self):
         update_payload = {
             "name": "Updated Mechanic",
@@ -93,7 +93,7 @@ class MechanicRouteTests(unittest.TestCase):
         self.assertEqual(response_data["email"], "updatedmechanic@test.com")
         self.assertEqual(response_data["salary"], 75000.00)
         
-        # Verify updated values were committed:
+        # Verify updated values were committed to the database:
         with self.app.app_context():
             updated_mechanic = db.session.get(
                 Mechanic,
@@ -108,10 +108,10 @@ class MechanicRouteTests(unittest.TestCase):
                 updated_mechanic.name,
                 "Updated Mechanic"
             )
-        
     
-     # * Negative test
-    def test_update_mechanic_not_found(self): 
+    # * Negative test:
+    
+    def test_update_mechanic_not_found(self):
         """Test updating a mechanic that does not exist."""
 
         update_payload = {
@@ -130,8 +130,8 @@ class MechanicRouteTests(unittest.TestCase):
         response_data = response.get_json()
         self.assertIn("error", response_data)
     
-    
     # = Delete mechanic:
+    
     def test_delete_mechanic(self):
         response = self.client.delete(f"/mechanics/{self.mechanic_id}")
         response_data = response.get_json()
@@ -148,9 +148,9 @@ class MechanicRouteTests(unittest.TestCase):
                 self.mechanic_id
             )
             self.assertIsNone(deleted_mechanic)
-            
      
-    # * Negative test       
+    # * Negative test:
+    
     def test_delete_mechanic_not_found(self):
         """Test deleting a mechanic that does not exist."""
 
@@ -160,13 +160,12 @@ class MechanicRouteTests(unittest.TestCase):
         response_data = response.get_json()
         self.assertIn("error", response_data)
             
-            
     # = Rank mechanics by most tickets:
-    def test_get_my_tickets(self):
+    
+    def test_get_mechanics_ranked_by_ticket_count(self):
         response = self.client.get("/mechanics/most-tickets")
         response_data = response.get_json()
         
-        # No assigned tickets in setup (count = 0)
         self.assertEqual(response.status_code, 200)
         self.assertIsInstance(response_data, list)
         self.assertEqual(len(response_data), 1)

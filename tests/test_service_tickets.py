@@ -3,7 +3,7 @@ import unittest
 from app import create_app
 from app.models import db, Service_Ticket, Customer, Mechanic, Inventory
 
-# Service Ticket Route Tests:
+
 class ServiceTicketRouteTests(unittest.TestCase):
     
     def setUp(self):
@@ -51,7 +51,7 @@ class ServiceTicketRouteTests(unittest.TestCase):
             ])
             db.session.commit()
             
-            # Create an exisiting service ticket for routes:
+            # Create an existing service ticket for routes:
             self.service_ticket = Service_Ticket(
                 VIN="1HGCM82633A123456",
                 service_date="07/11/2026",
@@ -77,9 +77,9 @@ class ServiceTicketRouteTests(unittest.TestCase):
             db.drop_all()
             db.engine.dispose()
 
-
-    # TESTS:
+    
     # = Create service ticket:
+    
     def test_create_service_ticket(self):
         ticket_payload = {
             "VIN": "2C4RC1BG5KR654321",
@@ -96,11 +96,12 @@ class ServiceTicketRouteTests(unittest.TestCase):
         self.assertEqual(response_data["service_desc"], "Oil change")
         self.assertEqual(response_data["customer_id"], self.customer_id)
     
-     # * Negative test    
+    # * Negative test:
+     
     def test_create_service_ticket_customer_not_found(self):
-        """Test creating a service ticket for a customer that does not exist"""
+        """Test creating a service ticket for a customer that does not exist."""
         
-        ticket_payload ={
+        ticket_payload = {
             "VIN": "2C4RC1BG5KR654321",
             "service_date": "07/12/2026",
             "service_desc": "Oil change",
@@ -118,8 +119,8 @@ class ServiceTicketRouteTests(unittest.TestCase):
             "Customer not found."
             )
     
-        
     # = Get all service tickets:
+    
     def test_get_all_service_tickets(self):
         response = self.client.get("/service-tickets/")
         response_data = response.get_json()
@@ -129,16 +130,16 @@ class ServiceTicketRouteTests(unittest.TestCase):
         self.assertEqual(len(response_data), 1)
         self.assertEqual(response_data[0]["id"], self.ticket_id)
         self.assertEqual(response_data[0]["VIN"], "1HGCM82633A123456")
-    
-    
+       
     # = Assign mechanic to service ticket:
+    
     def test_assign_mechanic_to_service_ticket(self):
         response = self.client.put(f"/service-tickets/{self.ticket_id}/assign-mechanic/{self.mechanic_id}")
         response_data = response.get_json()
         
         # Confirm mechanic appears in ticket response:
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response_data['mechanics']), 1)
+        self.assertEqual(len(response_data["mechanics"]), 1)
         self.assertEqual(response_data["mechanics"][0]["id"], self.mechanic_id)
         
         # Verify relationship was committed to database:
@@ -161,7 +162,8 @@ class ServiceTicketRouteTests(unittest.TestCase):
                 assigned_ids
                 )
             
-    # * Negative test
+    # * Negative test:
+    
     def test_assign_mechanic_not_found(self):
         """Test assigning a mechanic that does not exist."""
 
@@ -170,11 +172,9 @@ class ServiceTicketRouteTests(unittest.TestCase):
         self.assertEqual(response.status_code, 404)
         response_data = response.get_json()
         self.assertIn("error", response_data)
-            
-            
-    
-    
+
     # = Remove mechanic from service ticket:
+    
     def test_remove_mechanic_from_service_ticket(self):
         # Assign mechanic before testing its removal:
         with self.app.app_context():
@@ -198,7 +198,7 @@ class ServiceTicketRouteTests(unittest.TestCase):
             ticket.mechanics.append(mechanic)
             db.session.commit()
             
-            # confirm mechanic was assigned before testing removal:
+            # Confirm mechanic was assigned before testing removal:
             self.assertIn(
                 self.mechanic_id,
                 [
@@ -212,7 +212,7 @@ class ServiceTicketRouteTests(unittest.TestCase):
         
         # Confirm response shows no assigned mechanics:
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response_data['mechanics'], [])
+        self.assertEqual(response_data["mechanics"], [])
         
         # Verify relationship was removed from database:
         with self.app.app_context():
@@ -235,10 +235,10 @@ class ServiceTicketRouteTests(unittest.TestCase):
                 assigned_ids
             )
     
-    
     # = Edit service ticket mechanics:
+    
     def test_edit_service_ticket_mechanics(self):
-        # Assign 2nd mechanic so route can remove them:
+        # Assign the second mechanic before testing removal:
         with self.app.app_context():
             ticket = db.session.get(
                 Service_Ticket,
@@ -247,7 +247,8 @@ class ServiceTicketRouteTests(unittest.TestCase):
             
             second_mechanic = db.session.get(
                 Mechanic,
-                self.second_mechanic_id)
+                self.second_mechanic_id
+                )
             
             self.assertIsNotNone(ticket)
             self.assertIsNotNone(second_mechanic)
@@ -266,7 +267,7 @@ class ServiceTicketRouteTests(unittest.TestCase):
         response = self.client.put(f"/service-tickets/{self.ticket_id}/edit", json=edit_payload)
         response_data = response.get_json()
             
-        # confirm 1st mechanic was added & 2nd was removed:
+        # Confirm 1st mechanic was added & 2nd was removed:
         self.assertEqual(response.status_code, 200)
         
         returned_mechanic_ids = [
@@ -276,8 +277,8 @@ class ServiceTicketRouteTests(unittest.TestCase):
         self.assertIn(self.mechanic_id, returned_mechanic_ids)
         self.assertNotIn(self.second_mechanic_id, returned_mechanic_ids)
     
-    
     # = Add inventory part to service ticket:
+    
     def test_add_inventory_part_to_service_ticket(self):
         response = self.client.put(f"/service-tickets/{self.ticket_id}/add-part/{self.part_id}")
         response_data = response.get_json()
@@ -312,7 +313,6 @@ class ServiceTicketRouteTests(unittest.TestCase):
                 self.part_id,
                 part_ids
             )
-        
     
     
 if __name__ == "__main__":

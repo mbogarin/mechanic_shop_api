@@ -3,7 +3,7 @@ import unittest
 from app import create_app
 from app.models import db, Inventory
 
-# Inventory Route Tests:
+
 class InventoryRouteTests(unittest.TestCase):
     
     def setUp(self):
@@ -32,8 +32,8 @@ class InventoryRouteTests(unittest.TestCase):
             db.engine.dispose()
 
 
-    # TESTS:
     # = Create inventory part:
+    
     def test_create_inventory_part(self):
         part_payload = {
             "name": "Oil Filter",
@@ -47,8 +47,8 @@ class InventoryRouteTests(unittest.TestCase):
         self.assertEqual(response_data["name"], "Oil Filter")
         self.assertEqual(response_data["price"], 24.99)
     
-    
     # = Get all inventory parts:
+    
     def test_get_all_parts(self):
         response = self.client.get("/inventory/")
         response_data = response.get_json()
@@ -60,8 +60,8 @@ class InventoryRouteTests(unittest.TestCase):
         self.assertEqual(response_data[0]["name"], "Brake Pads")
         self.assertEqual(response_data[0]["price"], 89.99)
         
-        
     # = Get single inventory part:
+    
     def test_get_single_part(self):
         response = self.client.get(f"/inventory/{self.part_id}")
         response_data = response.get_json()
@@ -71,8 +71,8 @@ class InventoryRouteTests(unittest.TestCase):
         self.assertEqual(response_data["name"], "Brake Pads")
         self.assertEqual(response_data["price"], 89.99)
     
-    
-     # * Negative test
+    # * Negative test:
+     
     def test_get_inventory_part_not_found(self):
         """Test retrieving an inventory part that does not exist""" 
         
@@ -86,11 +86,11 @@ class InventoryRouteTests(unittest.TestCase):
             response_data["message"],
             "Inventory part not found."
         )
-        
-        
-        
+
     # = Update inventory part:
+    
     def test_update_inventory_part(self):
+        
         # Route supports partial updates - only change price:
         update_payload = {
             "price": 99.99
@@ -104,7 +104,7 @@ class InventoryRouteTests(unittest.TestCase):
         self.assertEqual(response_data["name"], "Brake Pads")
         self.assertEqual(response_data["price"], 99.99)
         
-        # Verify updated values were committed:
+        # Verify updated values were committed to the database:
         with self.app.app_context():
             updated_part = db.session.get(
                 Inventory,
@@ -119,8 +119,8 @@ class InventoryRouteTests(unittest.TestCase):
                 99.99
             )
     
-    
     # = Delete inventory part:
+    
     def test_delete_inventory_part(self):
         response = self.client.delete(f"/inventory/{self.part_id}")
         response_data = response.get_json()
@@ -137,9 +137,7 @@ class InventoryRouteTests(unittest.TestCase):
                 self.part_id
             )
             self.assertIsNone(deleted_part)
-    
-    
-    
+            
     
 if __name__ == "__main__":
     unittest.main()
