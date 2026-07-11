@@ -53,7 +53,7 @@ paths:
                 "400":
                     description: "Validation error or email already associated with an account"
                     schema:
-                        $ref: "/#definitions/ErrorResponse"
+                        $ref: "#/definitions/ErrorResponse"
 
         # 2. Get all customers:
         get:
@@ -86,10 +86,10 @@ paths:
         put:
             tags: ["Customers"]
             summary: "Update the authenticated customer"
-            description: "Updates the customer identified by the JWT subject. The current route validates a complete customer payload."
+            description: "Updates the specified customer's information identified by the JWT subject using a complete customer payload. All required fields must be included in the request."
             operationId: "updateCustomer"
             security:
-                - BearerAuth: []
+                - bearerAuth: []
             parameters:
                 - in: "body"
                   name: "body"
@@ -121,7 +121,7 @@ paths:
             description: "Deletes the customer identified by the JWT subject. Related service tickets are deleted by the model cascade."
             operationId: "deleteCustomer"
             security:
-                - BearerAuth: []
+                - bearerAuth: []
             responses:
                 "200":
                     description: "Customer deleted successfully"
@@ -141,6 +141,7 @@ paths:
         get:
             tags: ["Customers"]
             summary: "Get single customer"
+            description: "Retrieves the customer with the specified ID. Returns the customer's information if found or an error if the customer does not exist."
             operationId: "getCustomer"
             parameters:
                 - $ref: "#/parameters/CustomerId"
@@ -189,7 +190,7 @@ paths:
             description: "Returns service tickets whose customer_id matches the JWT subject."
             operationId: "getMyTickets"
             security:
-                - BearerAuth: []
+                - bearerAuth: []
             responses:
                 "200":
                     description: "Customer service tickets"
@@ -208,6 +209,7 @@ paths:
         post:
             tags: ["Mechanics"]
             summary: "Create a mechanic"
+            description: "Creates a new mechanic record. The request must include the mechanic's name and email address. Email addresses must be unique."
             operationId: "createMechanic"
             parameters:
                 - in: "body"
@@ -229,6 +231,7 @@ paths:
         get:
             tags: ["Mechanics"]
             summary: "Get all mechanics"
+            description: "Retrieves a list of all mechanics currently stored in the system, including their basic contact information."
             operationId: "getMechanics"
             responses:
                 "200":
@@ -243,7 +246,7 @@ paths:
         put:
             tags: ["Mechanics"]
             summary: "Update a mechanic"
-            description: "The current route validates a complete mechanic payload."
+            description: "Updates the specified mechanic's information using a complete mechanic payload. All required fields must be included in the request."
             operationId: "updateMechanic"
             parameters:
                 - $ref: "#/parameters/MechanicId"
@@ -270,6 +273,7 @@ paths:
         delete:
             tags: ["Mechanics"]
             summary: "Delete a mechanic"
+            description: "Permanently removes the specified mechanic from the system. Returns a confirmation message after successful deletion."
             operationId: "deleteMechanic"
             parameters:
                 - $ref: "#/parameters/MechanicId"
@@ -288,7 +292,7 @@ paths:
         get:
             tags: ["Mechanics"]
             summary: "Rank mechanics by assigned ticket count"
-            description: "Returns mechanics sorted from the greatest to the fewest assigned service tickets."
+            description: "Retrieves mechanics ranked by the number of service tickets currently assigned to them and sorts them from the most to the least assigned service tickets, allowing workload distribution to be analyzed."
             operationId: "rankMechanicsByMostTickets"
             responses:
                 "200":
@@ -304,6 +308,7 @@ paths:
         post:
             tags: ["Inventory"]
             summary: "Create an inventory part"
+            description: "Creates a new inventory part that can later be assigned to service tickets. Part names must be unique if enforced by the API."
             operationId: "createInventoryPart"
             parameters:
                 - in: "body"
@@ -325,6 +330,7 @@ paths:
         get:
             tags: ["Inventory"]
             summary: "Get all inventory parts"
+            description: "Retrieves a list of all inventory parts currently available in the mechanic shop inventory."
             operationId: "getInventoryParts"
             responses:
                 "200":
@@ -339,6 +345,7 @@ paths:
         get:
             tags: ["Inventory"]
             summary: "Get single inventory part"
+            description: "Retrieves the inventory part with the specified ID. Returns the part's details if found or an error if the part does not exist."
             operationId: "getInventoryPart"
             parameters:
                 - $ref: "#/parameters/PartId"
@@ -346,17 +353,17 @@ paths:
                 "200":
                     description: "Inventory part found"
                     schema:
-                    $ref: "#/definitions/InventoryPart"
+                        $ref: "#/definitions/InventoryPart"
                 "404":
                     description: "Inventory part not found"
                     schema:
-                    $ref: "#/definitions/MessageResponse"
+                        $ref: "#/definitions/MessageResponse"
 
         # 4. Update inventory part:
         put:
             tags: ["Inventory"]
             summary: "Update an inventory part"
-            description: "Supports partial updates to name and/or price."
+            description: "Updates the information for the specified inventory part. Only the values provided in the request body will be modified. Supports partial updates to name and/or price."
             operationId: "updateInventoryPart"
             parameters:
                 - $ref: "#/parameters/PartId"
@@ -383,6 +390,7 @@ paths:
         delete:
             tags: ["Inventory"]
             summary: "Delete an inventory part"
+            description: "Permanently removes the specified inventory part from the inventory and returns a confirmation message upon success."
             operationId: "deleteInventoryPart"
             parameters:
                 - $ref: "#/parameters/PartId"
@@ -458,7 +466,7 @@ paths:
                     schema:
                         $ref: "#/definitions/ErrorResponse"
                 "429":
-                    description: "Assignment rate limit exceeded"
+                    description: "Assignment rate limit exceeded."
                     schema:
                         $ref: "#/definitions/RateLimitResponse"
 
@@ -467,6 +475,7 @@ paths:
         put:
             tags: ["Service Tickets"]
             summary: "Remove a mechanic from a service ticket"
+            description: "Removes the specified mechanic from the service ticket. Returns the updated ticket if the mechanic was successfully removed."
             operationId: "removeMechanic"
             parameters:
                 - $ref: "#/parameters/TicketId"
@@ -514,6 +523,7 @@ paths:
         put:
             tags: ["Service Tickets"]
             summary: "Add an inventory part to a service ticket"
+            description: "Associates an inventory part with the specified service ticket and returns the updated ticket details."
             operationId: "addPartToTicket"
             parameters:
                 - $ref: "#/parameters/TicketId"
@@ -643,7 +653,7 @@ definitions:
             customers:
                 type: "array"
                 items:
-                $ref: "#/definitions/Customer"
+                    $ref: "#/definitions/Customer"
             total_customers:
                 type: "integer"
                 format: "int32"
@@ -724,7 +734,7 @@ definitions:
             price:
                 type: "number"
                 format: "float"
-                example: "49.99"
+                example: 49.99
 
     InventoryUpdateInput:
         type: "object"
@@ -736,7 +746,7 @@ definitions:
             price:
                 type: "number"
                 format: "float"
-                example: "79.99"
+                example: 79.99
 
     InventoryPart:
         allOf:
@@ -754,24 +764,24 @@ definitions:
         type: "object"
         required: ["VIN", "service_date", "service_desc", "customer_id"]
         properties:
-        VIN:
-            type: "string"
-            maxLength: 50
-            example: "1HGCM82633A004352"
-        service_date:
-            type: "string"
-            description: "Service date stored by the API as a string"
-            example: "07/11/2026"
-        service_desc:
-            type: "string"
-            maxLength: 350
-            example: "Oil change and brake inspection"
-        customer_id:
-            type: "integer"
-            format: "int32"
-            example: 1
+            VIN:
+                type: "string"
+                maxLength: 50
+                example: "1HGCM82633A004352"
+            service_date:
+                type: "string"
+                description: "Service date stored by the API as a string"
+                example: "07/11/2026"
+            service_desc:
+                type: "string"
+                maxLength: 350
+                example: "Oil change and brake inspection"
+            customer_id:
+                type: "integer"
+                format: "int32"
+                example: 1
 
-    ServiceTIcket:
+    ServiceTicket:
         type: "object"
         required:
             [
@@ -785,33 +795,33 @@ definitions:
                 "parts",
             ]
         properties:
-        id:
-            type: "integer"
-            format: "int32"
-            example: 1
-        VIN:
-            type: "string"
-            example: "1HGCM82633A004352"
-        service_date:
-            type: "string"
-            example: "07/11/2026"
-        service_desc:
-            type: "string"
-            example: "Oil change and brake inspection"
-        customer_id:
-            type: "integer"
-            format: "int32"
-            example: 1
-        customer:
-            $ref: "#/definitions/Customer"
-        mechanics:
-            type: "array"
-            items:
-            $ref: "#/definitions/Mechanic"
-        parts:
-            type: "array"
-            items:
-            $ref: "#/definitions/InventoryPart"
+            id:
+                type: "integer"
+                format: "int32"
+                example: 1
+            VIN:
+                type: "string"
+                example: "1HGCM82633A004352"
+            service_date:
+                type: "string"
+                example: "07/11/2026"
+            service_desc:
+                type: "string"
+                example: "Oil change and brake inspection"
+            customer_id:
+                type: "integer"
+                format: "int32"
+                example: 1
+            customer:
+                $ref: "#/definitions/Customer"
+            mechanics:
+                type: "array"
+                items:
+                    $ref: "#/definitions/Mechanic"
+            parts:
+                type: "array"
+                items:
+                    $ref: "#/definitions/InventoryPart"
 
     EditedServiceTicket:
         type: "object"
@@ -826,29 +836,29 @@ definitions:
                 "parts",
             ]
         properties:
-        id:
-            type: "integer"
-            format: "int32"
-            example: 1
-        VIN:
-            type: "string"
-            example: "1HGCM82633A004352"
-        service_date:
-            type: "string"
-            example: "07/11/2026"
-        service_desc:
-            type: "string"
-            example: "Oil change and brake inspection"
-        customer:
-            $ref: "#/definitions/Customer"
-        mechanics:
-            type: "array"
-            items:
-            $ref: "#/definitions/Mechanic"
-        parts:
-            type: "array"
-            items:
-            $ref: "#/definitions/InventoryPart"
+            id:
+                type: "integer"
+                format: "int32"
+                example: 1
+            VIN:
+                type: "string"
+                example: "1HGCM82633A004352"
+            service_date:
+                type: "string"
+                example: "07/11/2026"
+            service_desc:
+                type: "string"
+                example: "Oil change and brake inspection"
+            customer:
+                $ref: "#/definitions/Customer"
+            mechanics:
+                type: "array"
+                items:
+                    $ref: "#/definitions/Mechanic"
+            parts:
+                type: "array"
+                items:
+                    $ref: "#/definitions/InventoryPart"
 
     EditTicketMechanicsInput:
         type: "object"
@@ -883,6 +893,9 @@ definitions:
 
     ErrorResponse:
         type: "object"
+        required:
+            - error
+            - message
         properties:
             error:
                 type: "string"
@@ -891,7 +904,7 @@ definitions:
                 type: "string"
                 example: "Request could not be completed."
 
-    Validation Error:
+    ValidationError:
         type: "object"
         additionalProperties:
             type: "array"
@@ -903,4 +916,15 @@ definitions:
 
     RateLimitResponse:
         type: "object"
-        description: "Flask-Limiter response when the request limit is exceeded"
+        required:
+            - error
+            - message
+        properties:
+            error:
+                type: string
+                description: The type of error that occurred.
+                example: "Too Many Requests"
+            message:
+                type: string
+                description: The rate limit restriction that was exceeded.
+                example: "5 per 1 hour"

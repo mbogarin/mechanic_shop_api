@@ -30,9 +30,16 @@ def create_app(config_name):
     # Initialize extensions:
     ma.init_app(app)
     db.init_app(app)
-    
     limiter.init_app(app) # Flask-Limiter
     cache.init_app(app) # Flask-Caching
+    
+    # Global 429 error handler for rate-limited endpoints:
+    @app.errorhandler(429)
+    def ratelimit_handler(error):
+        return {
+            "error": "Too Many Requests",
+            "message": error.description
+        }, 429
     
     
     # Register blueprints:
