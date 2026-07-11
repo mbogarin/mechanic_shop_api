@@ -21,8 +21,8 @@ class CustomerRouteTests(unittest.TestCase):
             self.customer = Customer(
                 name="test_user", 
                 email="test@email.com", 
-                phone="123-456-7890", 
-                password="test-password"
+                phone="222-333-4444", 
+                password="password123"
             )
             
             db.session.add(self.customer)
@@ -48,7 +48,7 @@ class CustomerRouteTests(unittest.TestCase):
         customer_payload = {
             "name": "Test Customer",
             "email": "customer@test.com",
-            "phone": "123-456-7890",
+            "phone": "222-333-4444",
             "password": "password123"
         }
         
@@ -82,7 +82,7 @@ class CustomerRouteTests(unittest.TestCase):
     def test_customer_login(self):
         credentials = {
             "email": "test@email.com",
-            "password": "test-password"
+            "password": "password123"
         } 
         
         response = self.client.post("/customers/login", json=credentials)
@@ -98,7 +98,7 @@ class CustomerRouteTests(unittest.TestCase):
         update_payload = {
             "name": "Updated Customer",
             "email": "updated@test.com",
-            "phone": "123-456-7890",
+            "phone": "222-333-4444",
             "password": "updatedpassword"
         }
         
@@ -146,4 +146,6 @@ class CustomerRouteTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIsInstance(response_data, list)
         self.assertEqual(response_data, []) # returns empty list (setUp customer has no tickets).
-        
+    
+if __name__ == "__main__":
+    unittest.main()

@@ -1,7 +1,7 @@
 import unittest
 
 from app import create_app
-from app.models import db, Mechanic, Customer, Service_Ticket
+from app.models import db, Mechanic, Customer
 
 
 # Mechanic Route Tests:
@@ -18,14 +18,14 @@ class MechanicRouteTests(unittest.TestCase):
             self.customer = Customer(
                 name="Test Customer", 
                 email="customer@test.com", 
-                phone="123-456-7890", 
-                password="test-password"
+                phone="222-333-4444", 
+                password="password123"
             )
             
             self.mechanic = Mechanic(
                 name="Test Mechanic", 
                 email="mechanic@test.com", 
-                phone="123-456-7890", 
+                phone="222-333-4444", 
                 salary=65000.00
             )
             
@@ -70,7 +70,7 @@ class MechanicRouteTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIsInstance(response_data, list)
         self.assertEqual(len(response_data), 1)
-        self.assertEqual(response_data[0]["id"], self.mechanic.id)
+        self.assertEqual(response_data[0]["id"], self.mechanic_id)
         self.assertEqual(response_data[0]["email"], "mechanic@test.com")
         
     
@@ -131,7 +131,7 @@ class MechanicRouteTests(unittest.TestCase):
         
         # No assigned tickets in setup (count = 0)
         self.assertEqual(response.status_code, 200)
-        self. assertIsInstance(response_data, list)
+        self.assertIsInstance(response_data, list)
         self.assertEqual(len(response_data), 1)
         self.assertEqual(
             response_data[0]["id"],
@@ -140,3 +140,5 @@ class MechanicRouteTests(unittest.TestCase):
         self.assertEqual(response_data[0]["ticket_count"], 0)
     
     
+if __name__ == "__main__":
+    unittest.main()
