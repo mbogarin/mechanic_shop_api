@@ -204,14 +204,99 @@ paths:
 
     # > Mechanics endpoints:
     # 1. Create mechanic:
+    /mechanics/:
+        post:
+            tags: ["Mechanics"]
+            summary: "Create a mechanic"
+            operationId: "createMechanic"
+            parameters:
+                - in: "body"
+                  name: "body"
+                  required: true
+                  schema:
+                      $ref: "#/definitions/MechanicInput"
+            responses:
+                "201":
+                    description: "Mechanic created successfully"
+                    schema:
+                        $ref: "#/definitions/Mechanic"
+                "400":
+                    description: "Validation error"
+                    schema:
+                        $ref: "#/definitions/ValidationError"
 
-    # 2. Get all mechanics:
+        # 2. Get all mechanics:
+        get:
+            tags: ["Mechanics"]
+            summary: "Get all mechanics"
+            operationId: "getMechanics"
+            responses:
+                "200":
+                    description: "All mechanics"
+                    schema:
+                        type: "array"
+                        items:
+                            $ref: "#/definitions/Mechanic"
 
     # 3. Update mechanic:
+    /mechanics/{mechanic_id}:
+        put:
+            tags: ["Mechanics"]
+            summary: "Update a mechanic"
+            description: "The current route validates a complete mechanic payload."
+            operationId: "updateMechanic"
+            parameters:
+                - $ref: "#/parameters/MechanicId"
+                - in: "body"
+                  name: "body"
+                  required: true
+                  schema:
+                      $ref: "#/definitions/MechanicInput"
+            responses:
+                "200":
+                    description: "Mechanic updated successfully"
+                    schema:
+                        $ref: "#/definitions/Mechanic"
+                "400":
+                    description: "Validation error"
+                    schema:
+                        $ref: "#/definitions/ValidationError"
+                "404":
+                    description: "Mechanic not found"
+                    schema:
+                        $ref: "#/definitions/ErrorResponse"
 
-    # 4. Delete mechanic:
+        # 4. Delete mechanic:
+        delete:
+            tags: ["Mechanics"]
+            summary: "Delete a mechanic"
+            operationId: "deleteMechanic"
+            parameters:
+                - $ref: "#/parameters/MechanicId"
+            responses:
+                "200":
+                    description: "Mechanic deleted successfully"
+                    schema:
+                        $ref: "#/definitions/MessageResponse"
+                "404":
+                    description: "Mechanic not found"
+                    schema:
+                        $ref: "#/definitions/ErrorResponse"
 
     # 5. Rank mechanics by most tickets assigned:
+    /mechanics/most-tickets:
+        get:
+            tags: ["Mechanics"]
+            summary: "Rank mechanics by assigned ticket count"
+            description: "Returns mechanics sorted from the greatest to the fewest assigned service tickets."
+            operationId: "rankMechanicsByMostTickets"
+            responses:
+                "200":
+                    description: "Ranked mechanics"
+                    schema:
+                        type: "array"
+                        items:
+                            $ref: "#/definitions/MechanicTicketCount"
 
     # > Inventory endpoints:
     # 1. Create inventory part:
@@ -311,20 +396,145 @@ paths:
                     schema:
                         $ref: "#/definitions/MessageResponse"
 
-# > Service Tickets endpoints:
-# 1. Create service ticket:
+    # > Service Tickets endpoints:
+    # 1. Create service ticket:
+    /service-tickets/:
+        post:
+            tags: ["Service Tickets"]
+            summary: "Create a service ticket"
+            description: "Creates a ticket for an existing customer. VIN values must be unique."
+            operationId: "createServiceTicket"
+            parameters:
+                - in: "body"
+                  name: "body"
+                  required: true
+                  schema:
+                      $ref: "#/definitions/ServiceTicketInput"
+            responses:
+                "201":
+                    description: "Service ticket created successfully"
+                    schema:
+                        $ref: "#/definitions/ServiceTicket"
+                "400":
+                    description: "Validation error or duplicate VIN"
+                    schema:
+                        $ref: "#/definitions/ErrorResponse"
+                "404":
+                    description: "Customer not found"
+                    schema:
+                        $ref: "#/definitions/ErrorResponse"
 
-# 2. Get all service tickets:
+        # 2. Get all service tickets:
+        get:
+            tags: ["Service Tickets"]
+            summary: "Get all service tickets"
+            description: "Returns all tickets. This route is cached for 60 seconds."
+            operationId: "getServiceTickets"
+            responses:
+                "200":
+                    description: "All service tickets"
+                    schema:
+                        type: "array"
+                        items:
+                            $ref: "#/definitions/ServiceTicket"
 
-# 3. Assign service ticket mechanics:
+    # 3. Assign service ticket mechanics:
+    /service-tickets/{ticket_id}/assign-mechanic/{mechanic_id}:
+        put:
+            tags: ["Service Tickets"]
+            summary: "Assign a mechanic to a service ticket"
+            description: "Adds an existing mechanic to an existing ticket. Limited to five requests per hour per client IP."
+            operationId: "assignMechanic"
+            parameters:
+                - $ref: "#/parameters/TicketId"
+                - $ref: "#/parameters/MechanicId"
+            responses:
+                "200":
+                    description: "Mechanic assigned, or mechanic was already assigned"
+                    schema:
+                        $ref: "#/definitions/ServiceTicketOrMessage"
+                "404":
+                    description: "Service ticket or mechanic not found"
+                    schema:
+                        $ref: "#/definitions/ErrorResponse"
+                "429":
+                    description: "Assignment rate limit exceeded"
+                    schema:
+                        $ref: "#/definitions/RateLimitResponse"
 
-# 4. Remove service ticket mechanics:
+    # 4. Remove service ticket mechanics:
+    /service-tickets/{ticket_id}/remove-mechanic/{mechanic_id}:
+        put:
+            tags: ["Service Tickets"]
+            summary: "Remove a mechanic from a service ticket"
+            operationId: "removeMechanic"
+            parameters:
+                - $ref: "#/parameters/TicketId"
+                - $ref: "#/parameters/MechanicId"
+            responses:
+                "200":
+                    description: "Mechanic removed, or mechanic was not assigned"
+                    schema:
+                        $ref: "#/definitions/ServiceTicketOrMessage"
+                "404":
+                    description: "Service ticket or mechanic not found"
+                    schema:
+                        $ref: "#/definitions/ErrorResponse"
 
-# 5. Add/Remove service ticket mechanics:
+    # 5. Add/Remove service ticket mechanics:
+    /service-tickets/{ticket_id}/edit:
+        put:
+            tags: ["Service Tickets"]
+            summary: "Add and remove multiple mechanics on a service ticket"
+            description: "Adds mechanic IDs from add_ids and removes mechanic IDs from remove_ids. Missing or unrelated IDs are ignored by the current route logic."
+            operationId: "editTicketMechanics"
+            parameters:
+                - $ref: "#/parameters/TicketId"
+                - in: "body"
+                  name: "body"
+                  required: true
+                  schema:
+                      $ref: "#/definitions/EditTicketMechanicsInput"
+            responses:
+                "200":
+                    description: "Ticket mechanic assignments updated"
+                    schema:
+                        $ref: "#/definitions/EditedServiceTicket"
+                "400":
+                    description: "Validation error or invalid request data"
+                    schema:
+                        $ref: "#/definitions/ErrorResponse"
+                "404":
+                    description: "Service ticket not found"
+                    schema:
+                        $ref: "#/definitions/ErrorResponse"
 
-# 6. Add inventory part to service ticket:
+    # 6. Add inventory part to service ticket:
+    /service-tickets/{ticket_id}/add-part/{part_id}:
+        put:
+            tags: ["Service Tickets"]
+            summary: "Add an inventory part to a service ticket"
+            operationId: "addPartToTicket"
+            parameters:
+                - $ref: "#/parameters/TicketId"
+                - $ref: "#/parameters/PartId"
+            responses:
+                "200":
+                    description: "Inventory part added to the ticket"
+                    schema:
+                        $ref: "#/definitions/ServiceTicket"
+                "400":
+                    description: "Part is already added to the ticket"
+                    schema:
+                        $ref: "#/definitions/MessageResponse"
+                "404":
+                    description: "Service ticket or inventory part not found"
+                    schema:
+                        $ref: "#/definitions/MessageResponse"
 
 # = Definitions:
+parameters:
+
 definitions:
 
 # > Customers:
