@@ -10,11 +10,13 @@ GitHub: https://github.com/mbogarin
 
 ## Project Description
 
-The Mechanic Shop API is a RESTful backend application built with Flask, SQLAlchemy, Marshmallow, and MySQL. It demonstrates relational database design, CRUD operations, the Application Factory Pattern, Blueprints, and Marshmallow serialization.
+The Mechanic Shop API is a RESTful backend application built with Flask, SQLAlchemy, Marshmallow, and MySQL. It demonstrates relational database design, CRUD operations, the Application Factory Pattern, Flask Blueprints, and Marshmallow serialization.
 
-The API manages customers, mechanics, and service tickets while supporting many-to-many relationships between mechanics and service tickets. Users can create and manage service tickets, assign mechanics to jobs, remove mechanics from jobs, and retrieve related data through organized REST endpoints.
+The API manages customers, mechanics, service tickets, and inventory while supporting many-to-many relationships between mechanics, inventory, and service tickets. This advanced version expands the original project by introducing JWT authentication, protected routes, rate limiting, response caching, and advanced database queries, making the API more secure, scalable, and production-ready.
 
 ### Features:
+
+### Core API Features
 
 - Built using the Application Factory Pattern
 
@@ -24,43 +26,80 @@ The API manages customers, mechanics, and service tickets while supporting many-
 
 - Marshmallow schemas for serialization and validation
 
+- MySQL database integration
+
+- JSON REST API responses
+
+### Resource Management
+
 - Full CRUD operations for Customers
 
 - Full CRUD operations for Mechanics
 
-- Create and retrieve Service Tickets
+- Full CRUD operations for Inventory
 
-- Assign Mechanics to Service Tickets
+- Create, retrieve, and update Service Tickets
 
-- Remove Mechanics from Service Tickets
+- Assign and remove Mechanics from Service Tickets
 
-- Many-to-many relationship management
+- Add Inventory Parts to Service Tickets
 
-- Foreign key validation
+### Security
 
-- JSON API responses
+- JWT Authentication
 
-- MySQL database integration
+- Customer login endpoint
+
+- Bearer Token authorization
+
+- Protected API routes
+
+- Customer-specific protected ticket endpoint
+
+### Performance
+
+- Rate limiting using Flask-Limiter
+
+- Response caching using Flask-Caching
+
+### Advanced API Features
+
+- Customer pagination
+
+- Mechanic ranking based on completed service tickets
+
+- Update mechanic assignments through a single endpoint
+
+- Many-to-many relationship management between:
+    - Mechanics and Service Tickets
+
+    - Inventory and Service Tickets
 
 ### Technologies Used:
 
-- Python
-
 - Flask
 
-- Flask SQLAlchemy
+- Flask-Caching
 
-- Flask Marshmallow
+- Flask-Limiter
+
+- Flask-Marshmallow
+
+- Flask-SQLAlchemy
 
 - Marshmallow
 
-- SQLAlchemy
-
 - MySQL
+
+- Postman
 
 - PyMySQL
 
-- Postman
+- Python
+
+- python-jose
+
+- SQLAlchemy
 
 ---
 
@@ -144,7 +183,7 @@ Install the required packages:
 
 ```bash
 
-pip install Flask Flask-SQLAlchemy Flask-Marshmallow marshmallow-sqlalchemy
+pip install -r requirements.txt
 
 ```
 
@@ -162,7 +201,7 @@ python app.py
 
 ## API Endpoints
 
-### Customers:
+### Customers
 
 | Method | Endpoint | Description |
 
@@ -170,15 +209,19 @@ python app.py
 
 | POST | `/customers/` | Create a customer |
 
-| GET | `/customers/` | Retrieve all customers |
+| POST | `/customers/login` | Authenticate a customer and return a JWT |
+
+| GET | `/customers/` | Retrieve a paginated list of customers |
 
 | GET | `/customers/<id>` | Retrieve a customer by ID |
 
-| PUT | `/customers/<id>` | Update a customer |
+| PUT | `/customers/<id>` | Update a customer _(Protected)_ |
 
-| DELETE | `/customers/<id>` | Delete a customer |
+| DELETE | `/customers/<id>` | Delete a customer _(Protected)_ |
 
-### Mechanics:
+| GET | `/customers/my-tickets` | Retrieve service tickets for the authenticated customer _(Protected)_ |
+
+### Mechanics
 
 | Method | Endpoint | Description |
 
@@ -188,11 +231,13 @@ python app.py
 
 | GET | `/mechanics/` | Retrieve all mechanics |
 
+| GET | `/mechanics/most-tickets` | Retrieve mechanics ranked by completed service tickets |
+
 | PUT | `/mechanics/<id>` | Update a mechanic |
 
 | DELETE | `/mechanics/<id>` | Delete a mechanic |
 
-### Service Tickets:
+### Service Tickets
 
 | Method | Endpoint | Description |
 
@@ -202,9 +247,29 @@ python app.py
 
 | GET | `/service-tickets/` | Retrieve all service tickets |
 
+| PUT | `/service-tickets/<ticket_id>/edit` | Add and remove mechanics from a ticket |
+
 | PUT | `/service-tickets/<ticket_id>/assign-mechanic/<mechanic_id>` | Assign a mechanic to a service ticket |
 
 | PUT | `/service-tickets/<ticket_id>/remove-mechanic/<mechanic_id>` | Remove a mechanic from a service ticket |
+
+| PUT | `/service-tickets/<ticket_id>/add-part/<inventory_id>` | Add an inventory part to a service ticket |
+
+### Inventory
+
+| Method | Endpoint | Description |
+
+|--------|----------|-------------|
+
+| POST | `/inventory/` | Create an inventory part |
+
+| GET | `/inventory/` | Retrieve all inventory parts |
+
+| GET | `/inventory/<id>` | Retrieve an inventory part by ID |
+
+| PUT | `/inventory/<id>` | Update an inventory part |
+
+| DELETE | `/inventory/<id>` | Delete an inventory part |
 
 ---
 
@@ -215,8 +280,12 @@ mechanic_shop_api/
 ├── app/
 │   ├── blueprints/
 │   │   ├── customers/
+│   │   ├── inventory/
 │   │   ├── mechanics/
 │   │   └── service_tickets/
+│   │
+│   ├── utils/
+│   │   └── utils.py
 │   │
 │   ├── extensions.py
 │   ├── models.py
@@ -224,8 +293,9 @@ mechanic_shop_api/
 │
 ├── config.py
 ├── app.py
+├── requirements.txt
 ├── README.md
-└── mechanic_shop_postman_collection.json
+└── mechanic_shop.postman_collection.json
 ```
 
 ---
@@ -234,19 +304,25 @@ mechanic_shop_api/
 
 Use Postman or another API testing tool to interact with the API.
 
-Typical workflow:
+A typical workflow is:
 
-1. Create a customer.
+1. Register a customer.
 
-2. Create one or more mechanics.
+2. Log in to receive a JWT.
 
-3. Create a service ticket for a customer.
+3. Use the Bearer token to access protected endpoints.
 
-4. Assign one or more mechanics to the service ticket.
+4. Create mechanics and inventory parts.
 
-5. Remove mechanics from the service ticket when necessary.
+5. Create a service ticket.
 
-6. Retrieve service tickets to view assigned mechanics.
+6. Assign mechanics to the service ticket.
+
+7. Add inventory parts to the service ticket.
+
+8. Retrieve customer tickets using the protected endpoint.
+
+9. Use advanced query endpoints such as mechanic rankings and customer pagination.
 
 ---
 
@@ -254,29 +330,27 @@ Typical workflow:
 
 Potential future improvements include:
 
-- Authentication and authorization
+- Role-based authentication for mechanics and administrators
 
-- Pagination for large datasets
+- Inventory quantity tracking through junction models
 
-- Search and filtering endpoints
+- Search and filtering across resources
 
 - Service ticket status tracking
 
-- Service history for customers
+- Automated unit and integration testing
 
-- Automatic timestamps
+- API documentation using Swagger/OpenAPI
 
-- Unit and integration testing
+- Docker containerization
 
-- API documentation with Swagger/OpenAPI
+- CI/CD pipeline for automated testing and deployment
 
 ---
 
 ## Collaborators
 
-Currently this project was developed independently as part of a backend software engineering curriculum.
-
-Future collaborators can be listed here:
+This project was developed independently as part of the Coding Temple Backend Software Engineering curriculum.
 
 ### Credits
 

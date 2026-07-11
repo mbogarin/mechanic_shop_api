@@ -2,7 +2,8 @@ from app.extensions import ma
 from app.models import Customer
 from marshmallow import fields
 
-# = Customer schema:
+
+# Customer schema:
 class CustomerSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = Customer
@@ -21,9 +22,7 @@ class PaginatedCustomerSchema(ma.Schema):
     def get_customers(self, obj):
         return CustomerSchema(many=True).dump(obj.items)
     
-        
-        
-        
+               
 # Initialize schema instances:
 customer_schema = CustomerSchema()
 customers_schema = CustomerSchema(many=True)

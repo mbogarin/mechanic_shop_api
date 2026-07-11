@@ -2,7 +2,7 @@ from app.extensions import ma
 from app.models import Mechanic
 from marshmallow import fields
 
-# = Mechanic schema:
+# Mechanic schema:
 class MechanicSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = Mechanic

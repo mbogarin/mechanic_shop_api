@@ -1,5 +1,3 @@
-# CREATE/DEFINE MODELS:
-
 from typing import List
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
@@ -10,13 +8,16 @@ class Base(DeclarativeBase):
 db = SQLAlchemy(model_class=Base)
 
 
-# JUNCTION DB TABLES: 
+
+# = DATABASE MODELS & RELATIONSHIP TABLES:
+
+# JUNCTION TABLES FOR MANY-TO-MANY RELATIONSHIPS: 
 service_mechanic = db.Table(
     'service_mechanic', 
     Base.metadata, 
     Column('ticket_id', ForeignKey('service_tickets.id')),
     Column('mechanic_id', ForeignKey('mechanics.id'))
-) # Many-to-Many relationship btwn Mechanics & Service Tickets:
+) 
 
 service_inventory = db.Table(
     "service_inventory",
@@ -24,7 +25,6 @@ service_inventory = db.Table(
     Column("service_ticket_id", ForeignKey("service_tickets.id"), primary_key=True),
     Column("inventory_id", ForeignKey("inventory.id"), primary_key=True)
 )
-
 
 
 # CUSTOMERS:
@@ -59,7 +59,10 @@ class Service_Ticket(Base):
     customer: Mapped['Customer'] = relationship(back_populates='service_tickets')
     
     # Many-to-Many relationship w/ Mechanics:
-    mechanics: Mapped[List['Mechanic']] = relationship(secondary=service_mechanic, back_populates='service_tickets')
+    mechanics: Mapped[List['Mechanic']] = relationship(
+        secondary=service_mechanic, 
+        back_populates='service_tickets'
+        )
     
     # Many-to-Many relationship w/ Inventory:
     parts: Mapped[List["Inventory"]] = relationship(
@@ -81,11 +84,14 @@ class Mechanic(Base):
 
 
     # Many-to-Many relationship w/ Service Tickets:
-    service_tickets: Mapped[List['Service_Ticket']] = relationship(secondary=service_mechanic, back_populates='mechanics')
+    service_tickets: Mapped[List['Service_Ticket']] = relationship(
+        secondary=service_mechanic, 
+        back_populates='mechanics'
+        )
     
     
     
-# = 4. INVENTORY:
+# 4. INVENTORY:
 class Inventory(Base):
     __tablename__ = "inventory"
     
@@ -96,5 +102,6 @@ class Inventory(Base):
 
     # Many-to-Many relationship w/ Service Tickets:
     service_tickets: Mapped[List["Service_Ticket"]] = relationship(
-        secondary=service_inventory, back_populates="parts"
+        secondary=service_inventory, 
+        back_populates="parts"
     )

@@ -9,8 +9,8 @@ from app.blueprints.inventory.schemas import InventorySchema
 # Service Ticket schema:
 class ServiceTicketSchema(ma.SQLAlchemyAutoSchema):
     customer = fields.Nested(CustomerSchema)
-    mechanics = fields.Nested(MechanicSchema, many=True) # Show assigned mechanics.
-    parts = fields.Nested(InventorySchema, many=True) # Show inventory parts
+    mechanics = fields.Nested(MechanicSchema, many=True)
+    parts = fields.Nested(InventorySchema, many=True) 
     class Meta:
         model = Service_Ticket
         include_fk = True # foreign key

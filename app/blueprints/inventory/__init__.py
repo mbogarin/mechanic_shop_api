@@ -1,9 +1,9 @@
 from flask import Blueprint
 
-# = Inventory blueprint:
+# = Inventory Blueprints:
 
-# initialize blueprint:
+# Initialize blueprint:
 inventory_bp = Blueprint("inventory_bp", __name__)
 
-# import routes:
+# Import routes:
 from . import routes

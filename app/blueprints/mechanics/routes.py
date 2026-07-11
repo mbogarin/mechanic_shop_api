@@ -7,9 +7,9 @@ from app.models import Mechanic, db
 from . import mechanics_bp
 
 
-# MECHANIC ROUTES:
+# = MECHANIC ROUTES:
 
-# = 1. Create new mechanic (POST):
+# 1. (POST) CREATE MECHANIC:
 @mechanics_bp.route("/", methods=["POST"])
 def create_mechanic():
     try:
@@ -24,7 +24,7 @@ def create_mechanic():
     return mechanic_schema.jsonify(new_mechanic), 201
 
 
-# = 2. Retrieve all mechanics (GET):
+# 2. (GET) GET ALL MECHANICS:
 @mechanics_bp.route("/", methods=["GET"])
 def get_mechanics():
     query = select(Mechanic)
@@ -33,7 +33,7 @@ def get_mechanics():
     return mechanics_schema.jsonify(mechanics), 200
 
 
-# = 3. Update specific mechanic (PUT):
+# 3. (PUT) UPDATE SINGLE MECHANIC:
 @mechanics_bp.route("/<int:mechanic_id>", methods=["PUT"])
 def update_mechanic(mechanic_id):
     mechanic = db.session.get(Mechanic, mechanic_id)
@@ -50,10 +50,11 @@ def update_mechanic(mechanic_id):
         setattr(mechanic, key, value)
         
     db.session.commit()
+    
     return mechanic_schema.jsonify(mechanic), 200
 
 
-# = 4. Delete specific mechanic (DELETE):
+# 4. (DELETE) DELETE SINGLE MECHANIC:
 @mechanics_bp.route("/<int:mechanic_id>", methods=["DELETE"])
 def delete_mechanic(mechanic_id):
     mechanic = db.session.get(Mechanic, mechanic_id)
@@ -64,7 +65,7 @@ def delete_mechanic(mechanic_id):
     db.session.delete(mechanic)
     db.session.commit()
     
-    return jsonify({"message":f"Mechanic id: {mechanic_id}, successfully deleted."}), 200
+    return jsonify({"message":f"{mechanic.name} was successfully deleted."}), 200
 
 
 # = 5. Get mechanics in order by most service tickets:
@@ -73,8 +74,6 @@ def get_mechanics_by_most_tickets():
     query = select(Mechanic)
     mechanics = db.session.execute(query).scalars().all()
     
-    sorted_mechanics = sorted(mechanics, key=lambda mechanic: len(mechanic.service_tickets), reverse=True) # Sorting w/ lambda functions
-    
-    # Show ticket count:
+    sorted_mechanics = sorted(mechanics, key=lambda mechanic: len(mechanic.service_tickets), reverse=True)
     
     return mechanic_ticket_count_schema.jsonify(sorted_mechanics), 200

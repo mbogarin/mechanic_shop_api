@@ -1,6 +1,6 @@
 from flask import Blueprint
 
-# = Customers blueprint:
+# = Customers Blueprint:
 
 # initialize blueprint:
 customers_bp = Blueprint("customer_bp", __name__)
