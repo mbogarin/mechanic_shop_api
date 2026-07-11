@@ -31,43 +31,285 @@ securityDefinitions:
 
 # = Paths:
 paths:
+    # > Customers endpoints:
+    # 1. Create customers:
+    /customers/:
+        post:
+            tags: ["Customers"]
+            summary: "Create a customer"
+            description: "Creates a new customer account. Customer email addresses must be unique."
+            operationId: "createCustomer"
+            parameters:
+                - in: "body"
+                  name: "body"
+                  required: true
+                  schema:
+                      $ref: "#/definitions/CustomerInput"
+            responses:
+                "201":
+                    description: "Customer created successfully"
+                    schema:
+                        $ref: "#/definitions/Customer"
+                "400":
+                    description: "Validation error or email already associated with an account"
+                    schema:
+                        $ref: "/#definitions/ErrorResponse"
 
-# > Customers endpoints:
-# 1. Create customers:
+        # 2. Get all customers:
+        get:
+            tags: ["Customers"]
+            summary: "Get all customers"
+            description: "Returns customers using page-based pagination."
+            operationId: "getCustomers"
+            parameters:
+                - in: "query"
+                  name: "page"
+                  type: "integer"
+                  format: "int32"
+                  default: 1
+                  minimum: 1
+                  description: "Page number"
+                - in: "query"
+                  name: "per_page"
+                  type: "integer"
+                  format: "int32"
+                  default: 5
+                  minimum: 1
+                  description: "Number of customers per page"
+            responses:
+                "200":
+                    description: "Paginated customer results"
+                    schema:
+                        $ref: "#/definitions/PaginatedCustomers"
 
-# 2. Get all customers:
+        # 3. Update customer:
+        put:
+            tags: ["Customers"]
+            summary: "Update the authenticated customer"
+            description: "Updates the customer identified by the JWT subject. The current route validates a complete customer payload."
+            operationId: "updateCustomer"
+            security:
+                - BearerAuth: []
+            parameters:
+                - in: "body"
+                  name: "body"
+                  required: true
+                  schema:
+                      $ref: "#/definitions/CustomerInput"
+            responses:
+                "200":
+                    description: "Customer updated successfully"
+                    schema:
+                        $ref: "#/definitions/Customer"
+                "400":
+                    description: "Validation error"
+                    schema:
+                        $ref: "#/definitions/ValidationError"
+                "401":
+                    description: "Missing, invalid, or expired token"
+                    schema:
+                        $ref: "#/definitions/MessageResponse"
+                "404":
+                    description: "Customer not found"
+                    schema:
+                        $ref: "#/definitions/ErrorResponse"
 
-# 3. Update customer:
+        # 4. Delete customer:
+        delete:
+            tags: ["Customers"]
+            summary: "Delete the authenticated customer"
+            description: "Deletes the customer identified by the JWT subject. Related service tickets are deleted by the model cascade."
+            operationId: "deleteCustomer"
+            security:
+                - BearerAuth: []
+            responses:
+                "200":
+                    description: "Customer deleted successfully"
+                    schema:
+                        $ref: "#/definitions/MessageResponse"
+                "401":
+                    description: "Missing, invalid, or expired token"
+                    schema:
+                        $ref: "#/definitions/MessageResponse"
+                "404":
+                    description: "Customer not found"
+                    schema:
+                        $ref: "#/definitions/ErrorResponse"
 
-# 4. Delete customer:
+    # 5. Get single customer:
+    /customers/{customer_id}:
+        get:
+            tags: ["Customers"]
+            summary: "Get single customer"
+            operationId: "getCustomer"
+            parameters:
+                - $ref: "#/parameters/CustomerId"
+            responses:
+                "200":
+                    description: "Customer found"
+                    schema:
+                        $ref: "#/definitions/Customer"
+                "404":
+                    description: "Customer not found"
+                    schema:
+                        $ref: "#/definitions/ErrorResponse"
 
-# 5. Get single customer:
+    # 6. Login:
+    /customers/login:
+        post:
+            tags: ["Customers"]
+            summary: "Log in a customer"
+            description: "Validates email and password and returns a JWT that expires after one hour."
+            operationId: "loginCustomer"
+            parameters:
+                - in: "body"
+                  name: "body"
+                  required: true
+                  schema:
+                      $ref: "#/definitions/LoginInput"
+            responses:
+                "200":
+                    description: "Login successful"
+                    schema:
+                        $ref: "#/definitions/LoginResponse"
+                "400":
+                    description: "Validation error"
+                    schema:
+                        $ref: "#/definitions/ValidationError"
+                "401":
+                    description: "Invalid email or password"
+                    schema:
+                        $ref: "#/definitions/MessageResponse"
 
-# 6. Login credentials:
+    # 7. Get customer tickets:
+    /customers/my-tickets:
+        get:
+            tags: ["Customers"]
+            summary: "Get the authenticated customer's service tickets"
+            description: "Returns service tickets whose customer_id matches the JWT subject."
+            operationId: "getMyTickets"
+            security:
+                - BearerAuth: []
+            responses:
+                "200":
+                    description: "Customer service tickets"
+                    schema:
+                        type: "array"
+                        items:
+                            $ref: "#/definitions/ServiceTicket"
+                "401":
+                    description: "Missing, invalid, or expired token"
+                    schema:
+                        $ref: "#/definitions/MessageResponse"
 
-# 7. Get customer tickets:
+    # > Mechanics endpoints:
+    # 1. Create mechanic:
 
-# > Mechanics endpoints:
-# 1. Create mechanic:
+    # 2. Get all mechanics:
 
-# 2. Get all mechanics:
+    # 3. Update mechanic:
 
-# 3. Update mechanic:
+    # 4. Delete mechanic:
 
-# 4. Delete mechanic:
+    # 5. Rank mechanics by most tickets assigned:
 
-# 5. Rank mechanics by most tickets assigned:
+    # > Inventory endpoints:
+    # 1. Create inventory part:
+    /inventory/:
+        post:
+            tags: ["Inventory"]
+            summary: "Create an inventory part"
+            operationId: "createInventoryPart"
+            parameters:
+                - in: "body"
+                  name: "body"
+                  required: true
+                  schema:
+                      $ref: "#/definitions/InventoryInput"
+            responses:
+                "201":
+                    description: "Inventory part created successfully"
+                    schema:
+                        $ref: "#/definitions/InventoryPart"
+                "400":
+                    description: "Validation error"
+                    schema:
+                        $ref: "#/definitions/ValidationError"
 
-# > Inventory endpoints:
-# 1. Create inventory part:
+        # 2. Get all inventory parts:
+        get:
+            tags: ["Inventory"]
+            summary: "Get all inventory parts"
+            operationId: "getInventoryParts"
+            responses:
+                "200":
+                    description: "All inventory parts"
+                    schema:
+                        type: "array"
+                        items:
+                            $ref: "#/definitions/InventoryPart"
 
-# 2. Get all inventory parts:
+    # 3. Get single inventory part:
+    /inventory/{part_id}:
+        get:
+            tags: ["Inventory"]
+            summary: "Get single inventory part"
+            operationId: "getInventoryPart"
+            parameters:
+                - $ref: "#/parameters/PartId"
+            responses:
+                "200":
+                    description: "Inventory part found"
+                    schema:
+                    $ref: "#/definitions/InventoryPart"
+                "404":
+                    description: "Inventory part not found"
+                    schema:
+                    $ref: "#/definitions/MessageResponse"
 
-# 3. Get inventory part:
+        # 4. Update inventory part:
+        put:
+            tags: ["Inventory"]
+            summary: "Update an inventory part"
+            description: "Supports partial updates to name and/or price."
+            operationId: "updateInventoryPart"
+            parameters:
+                - $ref: "#/parameters/PartId"
+                - in: "body"
+                  name: "body"
+                  required: true
+                  schema:
+                      $ref: "#/definitions/InventoryUpdateInput"
+            responses:
+                "200":
+                    description: "Inventory part updated successfully"
+                    schema:
+                        $ref: "#/definitions/InventoryPart"
+                "400":
+                    description: "Validation error"
+                    schema:
+                        $ref: "#/definitions/ValidationError"
+                "404":
+                    description: "Inventory part not found"
+                    schema:
+                        $ref: "#/definitions/MessageResponse"
 
-# 4. Update inventory part:
-
-# 5. Delete inventory part:
+        # 5. Delete inventory part:
+        delete:
+            tags: ["Inventory"]
+            summary: "Delete an inventory part"
+            operationId: "deleteInventoryPart"
+            parameters:
+                - $ref: "#/parameters/PartId"
+            responses:
+                "200":
+                    description: "Inventory part deleted successfully"
+                    schema:
+                        $ref: "#/definitions/MessageResponse"
+                "404":
+                    description: "Inventory part not found"
+                    schema:
+                        $ref: "#/definitions/MessageResponse"
 
 # > Service Tickets endpoints:
 # 1. Create service ticket:
