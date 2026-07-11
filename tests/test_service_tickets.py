@@ -77,7 +77,8 @@ class ServiceTicketRouteTests(unittest.TestCase):
             db.drop_all()
             db.engine.dispose()
 
-    # = TESTS:
+
+    # TESTS:
     # = Create service ticket:
     def test_create_service_ticket(self):
         ticket_payload = {
@@ -95,7 +96,29 @@ class ServiceTicketRouteTests(unittest.TestCase):
         self.assertEqual(response_data["service_desc"], "Oil change")
         self.assertEqual(response_data["customer_id"], self.customer_id)
     
+     # * Negative test    
+    def test_create_service_ticket_customer_not_found(self):
+        """Test creating a service ticket for a customer that does not exist"""
+        
+        ticket_payload ={
+            "VIN": "2C4RC1BG5KR654321",
+            "service_date": "07/12/2026",
+            "service_desc": "Oil change",
+            "customer_id": 9999
+        }
+        
+        response = self.client.post("/service-tickets/", json=ticket_payload)
+        
+        self.assertEqual(response.status_code, 404)
+        response_data = response.get_json()
+        
+        self.assertIn("error", response_data)
+        self.assertEqual(
+            response_data["error"],
+            "Customer not found."
+            )
     
+        
     # = Get all service tickets:
     def test_get_all_service_tickets(self):
         response = self.client.get("/service-tickets/")
@@ -137,10 +160,22 @@ class ServiceTicketRouteTests(unittest.TestCase):
                 self.mechanic_id,
                 assigned_ids
                 )
+            
+    # * Negative test
+    def test_assign_mechanic_not_found(self):
+        """Test assigning a mechanic that does not exist."""
+
+        response = self.client.put(f"/service-tickets/{self.ticket_id}/assign-mechanic/9999")
+        
+        self.assertEqual(response.status_code, 404)
+        response_data = response.get_json()
+        self.assertIn("error", response_data)
+            
+            
+    
     
     # = Remove mechanic from service ticket:
     def test_remove_mechanic_from_service_ticket(self):
-        
         # Assign mechanic before testing its removal:
         with self.app.app_context():
             ticket = db.session.get(
@@ -278,6 +313,7 @@ class ServiceTicketRouteTests(unittest.TestCase):
                 part_ids
             )
         
+    
     
 if __name__ == "__main__":
     unittest.main()

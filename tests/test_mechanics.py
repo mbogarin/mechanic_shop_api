@@ -110,6 +110,7 @@ class MechanicRouteTests(unittest.TestCase):
             )
         
     
+     # * Negative test
     def test_update_mechanic_not_found(self): 
         """Test updating a mechanic that does not exist."""
 
@@ -148,7 +149,8 @@ class MechanicRouteTests(unittest.TestCase):
             )
             self.assertIsNone(deleted_mechanic)
             
-            
+     
+    # * Negative test       
     def test_delete_mechanic_not_found(self):
         """Test deleting a mechanic that does not exist."""
 

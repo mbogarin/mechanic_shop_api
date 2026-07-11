@@ -31,8 +31,9 @@ class InventoryRouteTests(unittest.TestCase):
             db.drop_all()
             db.engine.dispose()
 
-    # = TESTS:
-    # Create inventory part:
+
+    # TESTS:
+    # = Create inventory part:
     def test_create_inventory_part(self):
         part_payload = {
             "name": "Oil Filter",
@@ -46,7 +47,8 @@ class InventoryRouteTests(unittest.TestCase):
         self.assertEqual(response_data["name"], "Oil Filter")
         self.assertEqual(response_data["price"], 24.99)
     
-    # Get all inventory parts:
+    
+    # = Get all inventory parts:
     def test_get_all_parts(self):
         response = self.client.get("/inventory/")
         response_data = response.get_json()
@@ -59,7 +61,7 @@ class InventoryRouteTests(unittest.TestCase):
         self.assertEqual(response_data[0]["price"], 89.99)
         
         
-    # Get single inventory part:
+    # = Get single inventory part:
     def test_get_single_part(self):
         response = self.client.get(f"/inventory/{self.part_id}")
         response_data = response.get_json()
@@ -69,7 +71,25 @@ class InventoryRouteTests(unittest.TestCase):
         self.assertEqual(response_data["name"], "Brake Pads")
         self.assertEqual(response_data["price"], 89.99)
     
-    # Update inventory part:
+    
+     # * Negative test
+    def test_get_inventory_part_not_found(self):
+        """Test retrieving an inventory part that does not exist""" 
+        
+        response = self.client.get("/inventory/9999")
+        
+        self.assertEqual(response.status_code, 404)
+        response_data = response.get_json()
+        
+        self.assertIn("message", response_data)
+        self.assertEqual(
+            response_data["message"],
+            "Inventory part not found."
+        )
+        
+        
+        
+    # = Update inventory part:
     def test_update_inventory_part(self):
         # Route supports partial updates - only change price:
         update_payload = {
@@ -91,13 +111,16 @@ class InventoryRouteTests(unittest.TestCase):
                 self.part_id
             )
             
+            self.assertIsNotNone(updated_part)
+            assert updated_part is not None 
+            
             self.assertEqual(
                 updated_part.price,
                 99.99
             )
     
     
-    # Delete inventory part:
+    # = Delete inventory part:
     def test_delete_inventory_part(self):
         response = self.client.delete(f"/inventory/{self.part_id}")
         response_data = response.get_json()

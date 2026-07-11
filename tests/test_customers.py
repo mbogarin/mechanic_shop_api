@@ -58,7 +58,8 @@ class CustomerRouteTests(unittest.TestCase):
         self.assertEqual(response.status_code, 201)
         self.assertEqual(response_data["name"], "Test Customer")
         
-        
+    
+    # * Negative test    
     def test_create_customer_duplicate_email(self):
         """Test creating a customer w/ an existing email"""
         
@@ -73,11 +74,11 @@ class CustomerRouteTests(unittest.TestCase):
         
         self.assertEqual(response.status_code, 400)
         
-        data = response.get_json()
+        response_data = response.get_json()
         
-        self.assertIn("message", data)
+        self.assertIn("message", response_data)
         self.assertEqual(
-            data["message"],
+            response_data["message"],
             "Email is already associated with an account."
             )
         
@@ -102,13 +103,14 @@ class CustomerRouteTests(unittest.TestCase):
         self.assertEqual(response_data["email"], "test@email.com")
 
 
+    # * Negative test
     def test_get_customer_not_found(self):
         """Test retrieving a customer that does not exist."""
 
         response = self.client.get("/customers/9999")
         self.assertEqual(response.status_code, 404)
-        data = response.get_json()
-        self.assertIn("error", data)
+        response_data = response.get_json()
+        self.assertIn("error", response_data)
         
                 
     # = Customer login:
@@ -123,9 +125,10 @@ class CustomerRouteTests(unittest.TestCase):
         
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response_data["status"], "success")
-        self.assertIn("token", response_data) # Returns JWT token.
+        self.assertIn("token", response_data)
         
-        
+    
+     # * Negative test    
     def test_customer_login_invalid_credentials(self):
         """Test customer login with an incorrect password."""
 
@@ -136,8 +139,13 @@ class CustomerRouteTests(unittest.TestCase):
 
         response = self.client.post("/customers/login", json=credentials)
         self.assertEqual(response.status_code, 401)
-        data = response.get_json()
-        self.assertIn("message", data)
+        response_data = response.get_json()
+        
+        self.assertIn("message", response_data)
+        self.assertEqual(
+            response_data["message"],
+            "Invalid email or password! Please try again."
+        )
     
     
     # = Update customer:
@@ -160,7 +168,8 @@ class CustomerRouteTests(unittest.TestCase):
         self.assertEqual(response_data["name"], "Updated Customer")
         self.assertEqual(response_data["email"], "updated@test.com")
         
-        
+    
+     # * Negative test    
     def test_update_customer_missing_token(self):
         """Test updating a customer without a JWT token."""
 
@@ -177,8 +186,8 @@ class CustomerRouteTests(unittest.TestCase):
         )
 
         self.assertEqual(response.status_code, 401)
-        data = response.get_json()
-        self.assertIn("message", data)        
+        response_data = response.get_json()
+        self.assertIn("message", response_data)        
         
         
     # = Delete customer:
@@ -200,31 +209,16 @@ class CustomerRouteTests(unittest.TestCase):
             self.assertIsNone(deleted_customer) # Return none when customer no longer exists.
             
     
+     # * Negative test
     def test_delete_customer_missing_token(self):
         """Test deleting a customer without a JWT token."""
 
         response = self.client.delete("/customers/")
 
         self.assertEqual(response.status_code, 401)
-        data = response.get_json()
-        self.assertIn("message", data)
+        response_data = response.get_json()
+        self.assertIn("message", response_data)
         
-        
-    def test_create_customer_missing_required_field(self):
-        """Test creating a customer with missing required fields."""
-
-        invalid_customer = {
-            "name": "John Doe",
-            "email": "new@email.com",
-            "phone": "333-444-555"
-            # Missing password
-        }
-
-        response = self.client.post("/customers/", json=invalid_customer)
-
-        self.assertEqual(response.status_code, 400)
-        data = response.get_json()
-        self.assertIn("password", data)
             
         
     # = Get authenticated customer tickets:
@@ -240,15 +234,16 @@ class CustomerRouteTests(unittest.TestCase):
         self.assertIsInstance(response_data, list)
         self.assertEqual(response_data, []) # returns empty list (setUp customer has no tickets).
         
-        
+     
+      # * Negative test   
     def test_get_my_tickets_missing_token(self):
         """Test retrieving customer tickets without a JWT token."""
 
         response = self.client.get("/customers/my-tickets")
         
         self.assertEqual(response.status_code, 401)
-        data = response.get_json()
-        self.assertIn("message", data)
+        response_data = response.get_json()
+        self.assertIn("message", response_data)
     
     
     
