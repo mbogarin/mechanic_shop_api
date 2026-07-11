@@ -44,8 +44,8 @@ class MechanicRouteTests(unittest.TestCase):
             # Close all database connections held by SQLAlchemy:
             db.engine.dispose()
 
-    # = TESTS:
-    # Create mechanic:
+    # TESTS:
+    # = Create mechanic:
     def test_create_mechanic(self):
         mechanic_payload = {
             "name": "New Mechanic",
@@ -62,7 +62,8 @@ class MechanicRouteTests(unittest.TestCase):
         self.assertEqual(response_data["email"], "newmechanic@test.com")
         self.assertEqual(response_data["salary"], 70000.00)
       
-    # Get all mechanics:
+    
+    # = Get all mechanics:
     def test_get_all_mechanics(self):
         response = self.client.get("/mechanics/")
         response_data = response.get_json()
@@ -74,7 +75,7 @@ class MechanicRouteTests(unittest.TestCase):
         self.assertEqual(response_data[0]["email"], "mechanic@test.com")
         
     
-    # Update mechanic:
+    # = Update mechanic:
     def test_update_mechanic(self):
         update_payload = {
             "name": "Updated Mechanic",
@@ -109,7 +110,27 @@ class MechanicRouteTests(unittest.TestCase):
             )
         
     
-    # Delete mechanic:
+    def test_update_mechanic_not_found(self): 
+        """Test updating a mechanic that does not exist."""
+
+        update_payload = {
+            "name": "Updated Mechanic",
+            "email": "updated@test.com",
+            "phone": "222-333-4444",
+            "salary": 75000.00
+        }
+
+        response = self.client.put(
+            "/mechanics/9999",
+            json=update_payload
+        )
+
+        self.assertEqual(response.status_code, 404)
+        response_data = response.get_json()
+        self.assertIn("error", response_data)
+    
+    
+    # = Delete mechanic:
     def test_delete_mechanic(self):
         response = self.client.delete(f"/mechanics/{self.mechanic_id}")
         response_data = response.get_json()
@@ -128,7 +149,17 @@ class MechanicRouteTests(unittest.TestCase):
             self.assertIsNone(deleted_mechanic)
             
             
-    # Rank mechanics by most tickets:
+    def test_delete_mechanic_not_found(self):
+        """Test deleting a mechanic that does not exist."""
+
+        response = self.client.delete("/mechanics/9999")
+
+        self.assertEqual(response.status_code, 404)
+        response_data = response.get_json()
+        self.assertIn("error", response_data)
+            
+            
+    # = Rank mechanics by most tickets:
     def test_get_my_tickets(self):
         response = self.client.get("/mechanics/most-tickets")
         response_data = response.get_json()

@@ -5,6 +5,7 @@ info:
     description: "REST API for managing customers, mechanics, service tickets, and inventory parts for a mechanic shop. Protected customer routes require a JWT Bearer token returned by the customer login endpoint."
     version: "1.0.0"
 host: "127.0.0.1:5000"
+basePath: "/"
 schemes:
     - "http"
 consumes:
