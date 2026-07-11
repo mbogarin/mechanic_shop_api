@@ -155,7 +155,7 @@ class ServiceTicketRouteTests(unittest.TestCase):
             
             # Confirm both records before creating relationship:
             self.assertIsNotNone(ticket)
-            self.assertIsNone(mechanic)
+            self.assertIsNotNone(mechanic)
             
             assert ticket is not None
             assert mechanic is not None
@@ -215,7 +215,7 @@ class ServiceTicketRouteTests(unittest.TestCase):
                 self.second_mechanic_id)
             
             self.assertIsNotNone(ticket)
-            self.assertIsNone(second_mechanic)
+            self.assertIsNotNone(second_mechanic)
             
             assert ticket is not None
             assert second_mechanic is not None
