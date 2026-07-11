@@ -534,13 +534,174 @@ paths:
 
 # = Definitions:
 parameters:
+    CustomerId:
+        name: "customer_id"
+        in: "path"
+        required: true
+        type: "integer"
+        format: "int32"
+        description: "Customer ID"
+
+    MechanicId:
+        name: "mechanic_id"
+        in: "path"
+        required: true
+        type: "integer"
+        format: "int32"
+        description: "Mechanic ID"
+
+    TicketId:
+        name: "ticket_id"
+        in: "path"
+        required: true
+        type: "integer"
+        format: "int32"
+        description: "Ticket ID"
+
+    PartId:
+        name: "part_id"
+        in: "path"
+        required: true
+        type: "integer"
+        format: "int32"
+        description: "Inventory part ID"
 
 definitions:
+    # > Customers:
 
-# > Customers:
+    CustomerInput:
+        type: "object"
+        required: ["name", "email", "phone", "password"]
+        properties:
+            name:
+                type: "string"
+                maxLength: 250
+                example: "John Doe"
+            email:
+                type: "string"
+                maxLength: 350
+                example: "john.doe@email.com"
+            phone:
+                type: "string"
+                maxLength: 20
+                example: "123-456-7890"
+            password:
+                type: "string"
+                maxLength: 100
+                example: "securePassword123"
 
-# > Mechanics:
+    Customer:
+        allOf:
+            - $ref: "#/definitions/CustomerInput"
+            - type: "object"
+              required: ["id"]
+              properties:
+                  id:
+                      type: "integer"
+                      format: "int32"
+                      example: 1
 
-# > Inventory:
+    LoginInput:
+        type: "object"
+        required: ["email", "password"]
+        properties:
+            email:
+                type: "string"
+                format: "email"
+                example: "john.smith@email.com"
+            password:
+                type: "string"
+                example: "securePassword123"
 
-# > Service Tickets:
+    LoginResponse:
+        type: "object"
+        required: ["status", "message", "token"]
+        properties:
+            status:
+                type: "string"
+                example: "success"
+            message:
+                type: "string"
+                example: "Customer successfully logged in!"
+            token:
+                type: "string"
+                description: "JWT Bearer token valid for one hour"
+                example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+
+    PaginatedCustomers:
+        type: "object"
+        required:
+            [
+                "customers",
+                "total_customers",
+                "page",
+                "per_page",
+                "total_page",
+                "has_next",
+                "has_prev",
+            ]
+        properties:
+            customers:
+                type: "array"
+                items:
+                $ref: "#/definitions/Customer"
+            total_customers:
+                type: "integer"
+                format: "int32"
+                example: 12
+            page:
+                type: "integer"
+                format: "int32"
+                example: 1
+            per_page:
+                type: "integer"
+                format: "int32"
+                example: 5
+            total_page:
+                type: "integer"
+                format: "int32"
+                example: 3
+            has_next:
+                type: "boolean"
+                example: true
+            has_prev:
+                type: "boolean"
+                example: false
+
+    # > Mechanics:
+
+    MechanicInput:
+
+    Mechanic:
+
+    MechanicTicketCount:
+
+    # > Inventory:
+
+    InventoryInput:
+
+    InventoryUpdateInput:
+
+    InventoryPart:
+
+    # > Service Tickets:
+
+    ServiceTicketInput:
+
+    ServiceTIcket:
+
+    EditedServiceTicket:
+
+    EditTicketMechanicsInput:
+
+    ServiceTicketOrMessage:
+
+    # < Responses:
+
+    MessageResponse:
+
+    ErrorResponse:
+
+    Validation Error:
+
+    RateLimitResponse:
