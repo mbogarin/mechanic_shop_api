@@ -1,0 +1,62 @@
+name: Mechanic Shop API Tests
+
+on:
+    push:
+        branches: [deployment-cicd-pipeline]
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout/@v4
+
+            - name: Set up Python
+              uses: actions/setup-python@v4
+              with:
+                  python-version: 3.14
+                  cache: pip
+
+            - name: Create virtual environment
+              run: |
+                  python - m venv venv
+                  source venv/bin/activate
+
+            - name: Install dependencies
+              run: |
+                  python -m pip install --upgrade pip
+                  python -m pip install -r requirements.txt
+
+            - name: Print debugging information
+              run: |
+                  echo: "Python Version: $(python --version)"
+                  echo: "Working Directory: $(pwd)"
+                  echo: "Contents of Working Directory: $(le -l)"
+                  echo: "Contents of site-packages: $(ls -l venv/lib/python*/site-packages)"
+
+    test:
+        needs: build
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: checkout code
+              uses: actions/checkout@v4
+
+            - name: Set up Python
+              uses: actions/setup-python@v4
+              with:
+                  python-version: 3.14
+
+            - name: Create virtual environment
+              run: |
+                  python -m venv venv
+                  source venv/bin/activate
+
+            - name: Install dependencies
+              run: |
+                  python -m pip install --upgrade pip
+                  python -m pip install -r requirements.txt
+
+            - name: Run tests
+              run: python -m unittest discover -s tests -p "test_*.py"
