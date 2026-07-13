@@ -133,7 +133,9 @@ A comprehensive unittest suite validates every API resource with both positive a
 - Negative test cases
 - Full endpoint coverage
 
-### Tech Stack
+---
+
+## Tech Stack
 
 - Flask
 - Flask-Caching
@@ -243,9 +245,9 @@ python app.py
 
 | GET | `/customers/<id>` | Retrieve a customer by ID |
 
-| PUT | `/customers/<id>` | Update a customer _(Protected)_ |
+| PUT | `/customers/` | Update a customer _(Protected)_ |
 
-| DELETE | `/customers/<id>` | Delete a customer _(Protected)_ |
+| DELETE | `/customers/` | Delete a customer _(Protected)_ |
 
 | GET | `/customers/my-tickets` | Retrieve service tickets for the authenticated customer _(Protected)_ |
 

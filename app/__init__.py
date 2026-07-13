@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask,jsonify
 from .extensions import ma, limiter, cache
 from .models import db
 
@@ -8,10 +8,12 @@ from .blueprints.service_tickets import service_tickets_bp
 from .blueprints.inventory import inventory_bp
 
 from flask_swagger_ui import get_swaggerui_blueprint
+from flask_swagger import swagger
+import yaml
 
 # Swagger setup:
-SWAGGER_URL = '/api/docs'  # URL for exposing Swagger UI (without trailing '/')
-API_URL = '/static/swagger.yaml'  # API URL (can be a local resource)
+SWAGGER_URL = "/api/docs"  # URL for exposing Swagger UI
+API_URL = "/api/swagger.json"  # API URL 
 
 swaggerui_blueprint = get_swaggerui_blueprint(
     SWAGGER_URL,
@@ -41,13 +43,27 @@ def create_app(config_name):
             "message": error.description
         }, 429
     
+    # Add JSON specification route for Swagger UI
+    @app.route("/api/swagger.json")
+    
+    def swagger_spec():
+        with app.open_resource("static/swagger.yaml") as swagger_file:
+            swagger_template = yaml.safe_load(swagger_file)
+            
+        
+        return jsonify(
+            swagger(app, template=swagger_template)
+        )
+        
     
     # Register blueprints:
     app.register_blueprint(customers_bp, url_prefix='/customers')
     app.register_blueprint(mechanics_bp, url_prefix="/mechanics")
     app.register_blueprint(service_tickets_bp, url_prefix="/service-tickets")
     app.register_blueprint(inventory_bp, url_prefix="/inventory")
-    app.register_blueprint(swaggerui_blueprint, url_prefix=SWAGGER_URL) # Registering our swagger blueprint.
+    
+    app.register_blueprint(swaggerui_blueprint, url_prefix=SWAGGER_URL) # Swagger blueprint.
     
     
+
     return app

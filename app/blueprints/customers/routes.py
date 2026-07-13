@@ -15,6 +15,7 @@ from app.blueprints.service_tickets.schemas import service_tickets_schema
 # 1. (POST) CREATE CUSTOMER:
 @customers_bp.route('/', methods=['POST'])
 def create_customer():
+        
     try:
         customer_data = customer_schema.load(request.json)
     except ValidationError as e:
@@ -146,4 +147,4 @@ def get_my_tickets(customer_id):
     
     service_tickets = db.session.execute(query).scalars().all()
     
-    return service_tickets_schema.jsonify(service_tickets), 200 
+    return service_tickets_schema.jsonify(service_tickets), 200

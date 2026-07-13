@@ -26,9 +26,10 @@ tags:
 # = Authentication/Authorization:
 securityDefinitions:
     bearerAuth:
-        type: apiKey
-        name: Authorization
+        type: "apiKey"
+        name: "Authorization"
         in: header
+        description: "Paste the JWT token only. The Bearer prefix is not required."
 
 # = Paths:
 paths:
@@ -48,13 +49,16 @@ paths:
                       $ref: "#/definitions/CustomerInput"
             responses:
                 "201":
-                    description: "Customer created successfully"
+                    description: "Customer created successfully."
                     schema:
                         $ref: "#/definitions/Customer"
                 "400":
-                    description: "Validation error or email already associated with an account"
+                    description: "Invalid input or email already associated with an account."
                     schema:
-                        $ref: "#/definitions/ErrorResponse"
+                        $ref: "#/definitions/ValidationOrMessageResponse"
+                    examples:
+                        application/json:
+                            message: "Email is already associated with an account."
 
         # 2. Get all customers:
         get:
@@ -103,9 +107,12 @@ paths:
                     schema:
                         $ref: "#/definitions/Customer"
                 "400":
-                    description: "Validation error"
+                    description: "Validation error or email already associated with an account."
                     schema:
-                        $ref: "#/definitions/ValidationError"
+                        $ref: "#/definitions/ValidationOrMessageResponse"
+                    examples:
+                        application/json:
+                            message: "Email is already associated with an account."
                 "401":
                     description: "Missing, invalid, or expired token"
                     schema:
@@ -425,9 +432,12 @@ paths:
                     schema:
                         $ref: "#/definitions/ServiceTicket"
                 "400":
-                    description: "Validation error or duplicate VIN"
+                    description: "Validation error or VIN already associated with another ticket."
                     schema:
-                        $ref: "#/definitions/ErrorResponse"
+                        $ref: "#/definitions/ValidationOrErrorResponse"
+                    examples:
+                        application/json:
+                            error: "VIN is already associated with another service ticket."
                 "404":
                     description: "Customer not found"
                     schema:
@@ -459,7 +469,7 @@ paths:
                 - $ref: "#/parameters/MechanicId"
             responses:
                 "200":
-                    description: "Mechanic assigned, or mechanic was already assigned"
+                    description: "Mechanic assigned or mechanic already assigned to this service ticket."
                     schema:
                         $ref: "#/definitions/ServiceTicketOrMessage"
                 "404":
@@ -483,7 +493,7 @@ paths:
                 - $ref: "#/parameters/MechanicId"
             responses:
                 "200":
-                    description: "Mechanic removed, or mechanic was not assigned"
+                    description: "Mechanic was removed from this service ticket or mechanic was not assigned."
                     schema:
                         $ref: "#/definitions/ServiceTicketOrMessage"
                 "404":
@@ -513,7 +523,10 @@ paths:
                 "400":
                     description: "Validation error or invalid request data"
                     schema:
-                        $ref: "#/definitions/ErrorResponse"
+                        $ref: "#/definitions/ValidationOrErrorResponse"
+                    examples:
+                        application/json:
+                            error: "Invalid request data."
                 "404":
                     description: "Service ticket not found"
                     schema:
@@ -586,11 +599,11 @@ definitions:
             name:
                 type: "string"
                 maxLength: 250
-                example: "John Doe"
+                example: "John Smith"
             email:
                 type: "string"
                 maxLength: 350
-                example: "john.doe@email.com"
+                example: "john.smith@email.com"
             phone:
                 type: "string"
                 maxLength: 20
@@ -686,12 +699,12 @@ definitions:
             name:
                 type: "string"
                 maxLength: 250
-                example: "Murphy Smith"
+                example: "Murphy Clarke"
             email:
                 type: "string"
                 format: "email"
                 maxLength: 350
-                example: "murphy.smith@email.com"
+                example: "murphy.clarke@email.com"
             phone:
                 type: "string"
                 maxLength: 15
@@ -699,7 +712,7 @@ definitions:
             salary:
                 type: "number"
                 format: "float"
-                example: 62500.0
+                example: 65000.0
 
     Mechanic:
         allOf:
@@ -731,7 +744,7 @@ definitions:
             name:
                 type: "string"
                 maxLength: 250
-                example: "Transmission Fluid"
+                example: "Oil Fluid"
             price:
                 type: "number"
                 format: "float"
@@ -743,7 +756,7 @@ definitions:
             name:
                 type: "string"
                 maxLength: 250
-                example: "Premium Transmission Fluid"
+                example: "Premium Oil Fluid"
             price:
                 type: "number"
                 format: "float"
@@ -894,16 +907,11 @@ definitions:
 
     ErrorResponse:
         type: "object"
-        required:
-            - error
-            - message
+        required: ["error"]
         properties:
             error:
                 type: "string"
                 example: "Resource not found."
-            message:
-                type: "string"
-                example: "Request could not be completed."
 
     ValidationError:
         type: "object"
@@ -915,6 +923,30 @@ definitions:
             email:
                 - "Missing data for required fields."
 
+    ValidationOrMessageResponse:
+        type: "object"
+        description: "Returns validation fields or a message describing the request problem."
+        properties:
+            message:
+                type: "string"
+                example: "Email is already associated with an account."
+        additionalProperties:
+            type: "array"
+            items:
+                type: "string"
+
+    ValidationOrErrorResponse:
+        type: "object"
+        description: "Returns validation fields or an error describing the request problem."
+        properties:
+            error:
+                type: "string"
+                example: "VIN is already associated with another service."
+        additional properties:
+            type: "array"
+            items:
+                type: "string"
+
     RateLimitResponse:
         type: "object"
         required:
@@ -922,10 +954,10 @@ definitions:
             - message
         properties:
             error:
-                type: string
+                type: "string"
                 description: The type of error that occurred.
                 example: "Too Many Requests"
             message:
-                type: string
+                type: "string"
                 description: The rate limit restriction that was exceeded.
                 example: "5 per 1 hour"
