@@ -48,11 +48,6 @@ jobs:
               with:
                   python-version: 3.14
 
-            - name: Create virtual environment
-              run: |
-                  python -m venv venv
-                  source venv/bin/activate
-
             - name: Install dependencies
               run: |
                   python -m pip install --upgrade pip
