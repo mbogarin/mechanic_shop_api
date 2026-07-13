@@ -5,11 +5,11 @@ import jose
 
 from flask import request, jsonify
 from functools import wraps
+import os
 
 
-# Token Authentication:
+SECRET_KEY = os.environ.get("SECRET_KEY") or "super secret secrets"
 
-SECRET_KEY = "secret key"
 
 # JWT Authentication:
 def encode_token(customer_id):
