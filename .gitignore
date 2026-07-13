@@ -17,3 +17,5 @@ instance/testing.db
 
 # env
 .env
+.env.*
+!.env.example
