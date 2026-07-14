@@ -893,8 +893,39 @@ definitions:
                 example: [3]
 
     ServiceTicketOrMessage:
-        description: "The route returns a ServiceTicket when the relationship changes or a message object when no change is needed."
         type: "object"
+        description: "Returns an updated service ticket when the relationship changes, or a message when no change is needed."
+        properties:
+            id:
+                type: "integer"
+                format: "int32"
+                example: 1
+            VIN:
+                type: "string"
+                example: "1HGCM82633A004352"
+            service_date:
+                type: "string"
+                example: "07/11/2026"
+            service_desc:
+                type: "string"
+                example: "Oil change and brake inspection"
+            customer_id:
+                type: "integer"
+                format: "int32"
+                example: 1
+            customer:
+                $ref: "#/definitions/Customer"
+            mechanics:
+                type: "array"
+                items:
+                    $ref: "#/definitions/Mechanic"
+            parts:
+                type: "array"
+                items:
+                    $ref: "#/definitions/InventoryPart"
+            message:
+                type: "string"
+                example: "Mechanic is already assigned to this service ticket."
 
     # > Responses:
     MessageResponse:
@@ -942,7 +973,7 @@ definitions:
             error:
                 type: "string"
                 example: "VIN is already associated with another service."
-        additional properties:
+        additionalProperties:
             type: "array"
             items:
                 type: "string"
