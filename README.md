@@ -1,424 +1,429 @@
 # Mechanic Shop API
 
+[![Mechanic Shop API CI/CD](https://github.com/mbogarin/mechanic_shop_api/actions/workflows/main.yaml/badge.svg?branch=deployment-cicd-pipeline)](https://github.com/mbogarin/mechanic_shop_api/actions/workflows/main.yaml)
+
+A RESTful Flask API for managing customers, mechanics, service tickets, and inventory for a mechanic shop.
+
+## Live Project
+
+- **Deployed API:** [mechanic-shop-api-06j7.onrender.com](https://mechanic-shop-api-06j7.onrender.com)
+- **Swagger UI:** [Interactive API Documentation](https://mechanic-shop-api-06j7.onrender.com/api/docs/)
+- **Swagger JSON:** [API Specification](https://mechanic-shop-api-06j7.onrender.com/api/swagger.json)
+- **GitHub Repository:** [github.com/mbogarin/mechanic_shop_api](https://github.com/mbogarin/mechanic_shop_api)
+
 ## Author
 
 **Magali Bogarin**
 
-GitHub: https://github.com/mbogarin
-
----
-
-## Project Description
-
-The Mechanic Shop API is a RESTful backend application built with Flask, SQLAlchemy, Marshmallow, and MySQL. The project follows the Application Factory Pattern and uses Flask Blueprints to organize resources into modular components.
-
-### What the API Does
-
-The API manages customers, mechanics, service tickets, and inventory through RESTful endpoints. It supports CRUD operations, many-to-many relationships, customer authentication, and inventory management for a mechanic shop.
-
-### How It Was Enhanced
-
-This advanced version expands the original API by introducing JWT authentication, protected routes, rate limiting, response caching, advanced database queries, and inventory management, making the application more secure, scalable, and production-ready.
-
-### How It's Documented
-
-The project includes interactive Swagger documentation for every endpoint, complete with request parameters, payload definitions, response definitions, authentication requirements, and example request and response data.
-
-### How It's Tested
-
-A comprehensive unittest suite validates every API resource with both positive and negative test cases, helping ensure endpoint functionality and reliability.
-
----
+- GitHub: [@mbogarin](https://github.com/mbogarin)
 
 ## Table of Contents
 
-- [Project Description](#project-description)
-
+- [Project Overview](#project-overview)
 - [Features](#features)
-
-- [Tech Stack](#tech-stack)
-
-- [Installation & Setup](#installation--setup)
-
-- [API Endpoints](#api-endpoints)
-
+- [Technology Stack](#technology-stack)
 - [Project Structure](#project-structure)
-
-- [Usage](#usage)
-
-- [API Documentation](#api-documentation)
-
+- [API Endpoints](#api-endpoints)
+- [Authentication](#authentication)
+- [Local Installation](#local-installation)
 - [Testing](#testing)
+- [CI/CD Pipeline](#cicd-pipeline)
+- [API Documentation](#api-documentation)
+- [Future Improvements](#future-improvements)
+- [Educational Scope](#educational-scope)
+- [Acknowledgments](#acknowledgments)
 
-- [Roadmap](#roadmap)
+## Project Overview
 
-- [Collaborators](#collaborators)
+The Mechanic Shop API is an educational backend project built with Flask. It provides endpoints for managing customers, mechanics, service tickets, and inventory parts.
 
----
+The application follows the Application Factory Pattern and uses Flask Blueprints to separate API resources into maintainable modules. SQLAlchemy manages database operations, while Marshmallow handles request validation and response serialization.
+
+The deployed application uses PostgreSQL on Render. SQLite provides an isolated database for automated testing and can also be used as a local development fallback.
 
 ## Features
 
-### Core API Features
+### Customer Management
 
-- Built using the Application Factory Pattern
+- Create customer accounts
+- Retrieve paginated customer records
+- Retrieve an individual customer
+- Authenticate customers and issue JWTs
+- Update the authenticated customer
+- Delete the authenticated customer
+- Retrieve tickets belonging to the authenticated customer
 
-- Organized with Flask Blueprints
+### Mechanic Management
 
-- SQLAlchemy ORM models
+- Create mechanics
+- Retrieve all mechanics
+- Update mechanic information
+- Delete mechanics
+- Rank mechanics by assigned service-ticket count
 
-- Marshmallow schemas for serialization and validation
+### Service-Ticket Management
 
-- MySQL database integration
+- Create service tickets for existing customers
+- Retrieve all service tickets
+- Assign mechanics to tickets
+- Remove mechanics from tickets
+- Add and remove multiple mechanics in one request
+- Add inventory parts to tickets
 
-- JSON REST API responses
+### Inventory Management
 
-### Resource Management
+- Create inventory parts
+- Retrieve all inventory parts
+- Retrieve an individual part
+- Partially update inventory records
+- Delete inventory parts
 
-- Full CRUD operations for Customers
+### Authentication and Performance
 
-- Full CRUD operations for Mechanics
-
-- Full CRUD operations for Inventory
-
-- Create, retrieve, and update Service Tickets
-
-- Assign and remove Mechanics from Service Tickets
-
-- Add Inventory Parts to Service Tickets
-
-### Security
-
-- JWT Authentication
-
-- Customer login endpoint
-
-- Bearer Token authorization
-
-- Protected API routes
-
-- Customer-specific protected ticket endpoint
-
-### Performance
-
-- Rate limiting using Flask-Limiter
-
-- Response caching using Flask-Caching
-
-### Advanced API Features
-
+- JWT customer authentication
+- Token-protected customer routes
+- Rate limiting on mechanic assignments
+- Response caching for service-ticket retrieval
 - Customer pagination
 
-- Retrieve mechanics ranked by the number of assigned service tickets
-
-- Update mechanic assignments through a single endpoint
-
-- Many-to-many relationship management between
-    - Mechanics and Service Tickets
-
-    - Inventory and Service Tickets
-
-### API Documentation
+### Documentation and Testing
 
 - Interactive Swagger UI
-- Endpoint documentation
-- Request/response examples
-- Payload definitions
-- Response definitions
+- Swagger 2.0 JSON specification
+- Request and response definitions
+- Authentication documentation
+- Request and response examples
+- 34 automated unit tests
+- Positive and negative test cases
+- Separate test module for each blueprint
 
-### Testing
+### Deployment and CI/CD
 
-- unittest framework
-- One test file per blueprint
-- Positive test cases
-- Negative test cases
-- Full endpoint coverage
+- PostgreSQL database hosted on Render
+- Flask API deployed as a Render web service
+- Gunicorn production server
+- Environment-based production configuration
+- GitHub Actions build, test, and deploy jobs
+- Deployment runs only after the build and tests pass
 
----
+## Technology Stack
 
-## Tech Stack
-
+- Python 3.14
 - Flask
-- Flask-Caching
-- Flask-Limiter
+- Flask-SQLAlchemy
+- SQLAlchemy
 - Flask-Marshmallow
+- Marshmallow
+- PostgreSQL
+- SQLite
 - Flask-Swagger
 - Flask-Swagger-UI
-- Flask-SQLAlchemy
-- Marshmallow
-- MySQL
-- Postman
-- PyMySQL
-- Python
-- python-jose
-- SQLAlchemy
+- JSON Web Tokens with python-jose
+- Flask-Limiter
+- Flask-Caching
+- Gunicorn
+- Render
+- GitHub Actions
 - unittest
-
----
-
-## Prerequisites
-
-Before running this project, ensure you have the following installed:
-
-- Python 3.x
-
-- MySQL Server
-
-- MySQL Workbench (recommended)
-
-- Postman (for testing API endpoints)
-
----
-
-## Installation & Setup
-
-### 1. Clone the Repository
-
-```bash
-
-git clone https://github.com/mbogarin/mechanic_shop_api.git
-
-cd mechanic_shop_api
-
-```
-
-### 2. Create a Virtual Environment
-
-```bash
-
-python -m venv venv
-
-```
-
-### 3. Activate the Virtual Environment
-
-#### macOS / Linux:
-
-```bash
-
-source venv/bin/activate
-
-```
-
-#### Windows:
-
-```bash
-
-venv\Scripts\activate
-
-```
-
-### 4. Install Dependencies
-
-Install the required packages:
-
-```bash
-
-pip install -r requirements.txt
-
-```
-
-### 5. Configure the Database
-
-Open `config.py` and update the MySQL connection string with your own database credentials before running the application.
-
-### 6. Run the Application
-
-```bash
-python app.py
-```
-
----
-
-## API Endpoints
-
-### Customers
-
-| Method | Endpoint | Description |
-
-|--------|----------|-------------|
-
-| POST | `/customers/` | Create a customer |
-
-| POST | `/customers/login` | Authenticate a customer and return a JWT |
-
-| GET | `/customers/` | Retrieve a paginated list of customers |
-
-| GET | `/customers/<id>` | Retrieve a customer by ID |
-
-| PUT | `/customers/` | Update a customer _(Protected)_ |
-
-| DELETE | `/customers/` | Delete a customer _(Protected)_ |
-
-| GET | `/customers/my-tickets` | Retrieve service tickets for the authenticated customer _(Protected)_ |
-
-### Mechanics
-
-| Method | Endpoint | Description |
-
-|--------|----------|-------------|
-
-| POST | `/mechanics/` | Create a mechanic |
-
-| GET | `/mechanics/` | Retrieve all mechanics |
-
-| GET | `/mechanics/most-tickets` | Retrieve mechanics ranked by completed service tickets |
-
-| PUT | `/mechanics/<id>` | Update a mechanic |
-
-| DELETE | `/mechanics/<id>` | Delete a mechanic |
-
-### Service Tickets
-
-| Method | Endpoint | Description |
-
-|--------|----------|-------------|
-
-| POST | `/service-tickets/` | Create a service ticket |
-
-| GET | `/service-tickets/` | Retrieve all service tickets |
-
-| PUT | `/service-tickets/<ticket_id>/edit` | Add and remove mechanics from a ticket |
-
-| PUT | `/service-tickets/<ticket_id>/assign-mechanic/<mechanic_id>` | Assign a mechanic to a service ticket |
-
-| PUT | `/service-tickets/<ticket_id>/remove-mechanic/<mechanic_id>` | Remove a mechanic from a service ticket |
-
-| PUT | `/service-tickets/<ticket_id>/add-part/<inventory_id>` | Add an inventory part to a service ticket |
-
-### Inventory
-
-| Method | Endpoint | Description |
-
-|--------|----------|-------------|
-
-| POST | `/inventory/` | Create an inventory part |
-
-| GET | `/inventory/` | Retrieve all inventory parts |
-
-| GET | `/inventory/<id>` | Retrieve an inventory part by ID |
-
-| PUT | `/inventory/<id>` | Update an inventory part |
-
-| DELETE | `/inventory/<id>` | Delete an inventory part |
+- Postman
 
 ---
 
 ## Project Structure
 
-```bash
+```text
 mechanic_shop_api/
+├── .github/
+│   └── workflows/
+│       └── main.yaml
 ├── app/
 │   ├── blueprints/
 │   │   ├── customers/
+│   │   │   ├── __init__.py
+│   │   │   ├── routes.py
+│   │   │   └── schemas.py
 │   │   ├── inventory/
+│   │   │   ├── __init__.py
+│   │   │   ├── routes.py
+│   │   │   └── schemas.py
 │   │   ├── mechanics/
+│   │   │   ├── __init__.py
+│   │   │   ├── routes.py
+│   │   │   └── schemas.py
 │   │   └── service_tickets/
+│   │       ├── __init__.py
+│   │       ├── routes.py
+│   │       └── schemas.py
 │   ├── static/
 │   │   └── swagger.yaml
 │   ├── utils/
 │   │   └── util.py
+│   ├── __init__.py
 │   ├── extensions.py
-│   ├── models.py
-│   └── __init__.py
-│
+│   └── models.py
 ├── tests/
 │   ├── test_customers.py
 │   ├── test_inventory.py
 │   ├── test_mechanics.py
 │   └── test_service_tickets.py
-│
-├── app.py
+├── .gitignore
 ├── config.py
+├── flask_app.py
+├── mechanic_shop.postman_collection.json
 ├── README.md
-├── requirements.txt
-└── mechanic_shop.postman_collection.json
+└── requirements.txt
 ```
 
----
+## API Endpoints
 
-## Usage
+### Customers
 
-Use Postman or another API testing tool to interact with the API.
+| Method | Endpoint                   | Description                                   | Authentication |
+| ------ | -------------------------- | --------------------------------------------- | -------------- |
+| POST   | `/customers/`              | Create a customer                             | No             |
+| GET    | `/customers/`              | Retrieve paginated customers                  | No             |
+| GET    | `/customers/{customer_id}` | Retrieve a customer by ID                     | No             |
+| POST   | `/customers/login`         | Log in and receive a JWT                      | No             |
+| PUT    | `/customers/`              | Update the authenticated customer             | JWT            |
+| DELETE | `/customers/`              | Delete the authenticated customer             | JWT            |
+| GET    | `/customers/my-tickets`    | Retrieve the authenticated customer’s tickets | JWT            |
 
-1. Register or log in as a customer.
-2. Authenticate using a JWT.
-3. Interact with protected API endpoints.
-4. Manage mechanics, service tickets, and inventory.
-5. View interactive API documentation through Swagger UI.
-6. Run the unittest suite to verify endpoint functionality.
+### Mechanics
 
----
+| Method | Endpoint                   | Description                             |
+| ------ | -------------------------- | --------------------------------------- |
+| POST   | `/mechanics/`              | Create a mechanic                       |
+| GET    | `/mechanics/`              | Retrieve all mechanics                  |
+| PUT    | `/mechanics/{mechanic_id}` | Update a mechanic                       |
+| DELETE | `/mechanics/{mechanic_id}` | Delete a mechanic                       |
+| GET    | `/mechanics/most-tickets`  | Rank mechanics by assigned ticket count |
 
-## API Documentation
+### Service Tickets
 
-Interactive API documentation is available through Swagger UI, allowing developers to explore and test API endpoints while viewing request parameters, authentication requirements, payload definitions, and example responses.
+| Method | Endpoint                                                     | Description                      |
+| ------ | ------------------------------------------------------------ | -------------------------------- |
+| POST   | `/service-tickets/`                                          | Create a service ticket          |
+| GET    | `/service-tickets/`                                          | Retrieve all service tickets     |
+| PUT    | `/service-tickets/{ticket_id}/assign-mechanic/{mechanic_id}` | Assign a mechanic                |
+| PUT    | `/service-tickets/{ticket_id}/remove-mechanic/{mechanic_id}` | Remove a mechanic                |
+| PUT    | `/service-tickets/{ticket_id}/edit`                          | Add or remove multiple mechanics |
+| PUT    | `/service-tickets/{ticket_id}/add-part/{part_id}`            | Add an inventory part            |
 
-The documentation includes:
+### Inventory
 
-- endpoint summaries
+| Method | Endpoint               | Description                        |
+| ------ | ---------------------- | ---------------------------------- |
+| POST   | `/inventory/`          | Create an inventory part           |
+| GET    | `/inventory/`          | Retrieve all inventory parts       |
+| GET    | `/inventory/{part_id}` | Retrieve an inventory part         |
+| PUT    | `/inventory/{part_id}` | Partially update an inventory part |
+| DELETE | `/inventory/{part_id}` | Delete an inventory part           |
 
-- request parameters
+For complete request schemas, response definitions, examples, and error responses, visit the [Swagger UI](https://mechanic-shop-api-06j7.onrender.com/api/docs/).
 
-- payload definitions
+## Authentication
 
-- response definitions
+Customer update, deletion, and ticket-history routes require a JWT.
 
-- authentication requirements
+### Obtain a token
 
-- example request and response bodies
+Send customer credentials to:
 
----
+```http
+POST /customers/login
+```
+
+Example request:
+
+```json
+{
+	"email": "customer@example.com",
+	"password": "password123"
+}
+```
+
+A successful response includes a token:
+
+```json
+{
+	"status": "success",
+	"message": "Customer successfully logged in!",
+	"token": "your.jwt.token"
+}
+```
+
+### Use the token
+
+Clients may send either of these authorization-header formats:
+
+```http
+Authorization: Bearer your.jwt.token
+```
+
+```http
+Authorization: your.jwt.token
+```
+
+When using Swagger UI, click **Authorize** and paste only the token. The `Bearer` prefix is not required there.
+
+## Local Installation
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/mbogarin/mechanic_shop_api.git
+cd mechanic_shop_api
+```
+
+Until the deployment branch is merged into `main`, switch to it with:
+
+```bash
+git checkout deployment-cicd-pipeline
+```
+
+### 2. Create a Virtual Environment
+
+```bash
+python -m venv venv
+```
+
+### 3. Activate the Virtual Environment
+
+macOS or Linux:
+
+```bash
+source venv/bin/activate
+```
+
+Windows PowerShell:
+
+```powershell
+venv\Scripts\Activate.ps1
+```
+
+### 4. Install Dependencies
+
+```bash
+python -m pip install -r requirements.txt
+```
+
+### 5. Configure Environment Variables
+
+Set a database URI and JWT secret before starting the application.
+
+macOS or Linux:
+
+```bash
+export SQLALCHEMY_DATABASE_URI="sqlite:///development.db"
+export SECRET_KEY="$(python -c 'import secrets; print(secrets.token_urlsafe(64))')"
+```
+
+Windows PowerShell:
+
+```powershell
+$env:SQLALCHEMY_DATABASE_URI = "sqlite:///development.db"
+$env:SECRET_KEY = python -c "import secrets; print(secrets.token_urlsafe(64))"
+```
+
+Never commit real database credentials or secret keys.
+
+### 6. Start the Application
+
+```bash
+flask --app flask_app run --debug
+```
+
+The local API will be available at:
+
+```text
+http://127.0.0.1:5000
+```
+
+The Swagger file is configured for the deployed HTTPS service. Use the live Swagger UI when testing the hosted API.
 
 ## Testing
 
-The project includes a comprehensive unittest suite to verify API functionality. Each blueprint has its own dedicated test module, making the test suite easier to organize and maintain as the API grows.
+The test suite uses Python’s built-in `unittest` library and an isolated SQLite database.
 
-Tests include:
-
-- Customer endpoints
-
-- Mechanic endpoints
-
-- Service Ticket endpoints
-
-- Inventory endpoints
-
-- Positive test cases
-
-- Negative test cases
-
-Run all tests with:
+Run all tests:
 
 ```bash
-
-python -m unittest discover tests
+python -m unittest discover -s tests -p "test_*.py"
 ```
 
----
+Current result:
 
-## Roadmap
+```text
+Ran 34 tests
+OK
+```
 
-Potential future improvements include:
+Test modules:
 
-- CI/CD pipeline
+- `test_customers.py`
+- `test_mechanics.py`
+- `test_service_tickets.py`
+- `test_inventory.py`
 
-- Automated API testing in GitHub Actions
+## CI/CD Pipeline
 
+The workflow is defined in:
+
+```text
+.github/workflows/main.yaml
+```
+
+It runs when changes are pushed to `deployment-cicd-pipeline`.
+
+The jobs execute in this order:
+
+```text
+build → test → deploy
+```
+
+1. **Build** checks out the repository, installs dependencies, and checks Python syntax.
+2. **Test** installs dependencies in a clean runner and executes all unit tests.
+3. **Deploy** triggers a Render deployment only after the test job succeeds.
+
+The deployment job uses GitHub repository secrets for the Render service ID and API key. Database credentials and the JWT secret are stored as environment variables in Render rather than in source control.
+
+## API Documentation
+
+The documentation is available in two forms:
+
+- [Interactive Swagger UI](https://mechanic-shop-api-06j7.onrender.com/api/docs/)
+- [Swagger JSON specification](https://mechanic-shop-api-06j7.onrender.com/api/swagger.json)
+
+The documentation covers:
+
+- All 23 API operations
+- Path and request methods
+- Route categories and summaries
+- Request parameters
+- Payload definitions
+- Response definitions
+- Example values
+- JWT authentication requirements
+- Validation and error responses
+
+## Future Improvements
+
+Potential improvements beyond the assignment requirements include:
+
+- Password hashing
+- Role-based authorization for staff operations
+- Database migrations with Alembic or Flask-Migrate
+- Automated coverage reporting
 - Docker support
+- OpenAPI 3 migration
+- Additional service-ticket CRUD operations
+- Production-grade rate-limit storage
 
-- Role-based authorization
+## Educational Scope
 
-- Test coverage reporting
+This project was developed independently as part of the Coding Temple Software Engineering curriculum. It demonstrates backend API development, relational data modeling, authentication, documentation, automated testing, cloud deployment, and continuous integration and deployment.
 
-- OpenAPI 3.0 migration
-
----
-
-## Collaborators
-
-This project was developed independently as part of the Coding Temple Backend Software Engineering curriculum.
-
-### Credits
+## Acknowledgments
 
 - Coding Temple instructors
 - Coding Temple mentors
