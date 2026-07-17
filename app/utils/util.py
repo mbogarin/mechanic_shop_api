@@ -5,11 +5,11 @@ import jose
 
 from flask import request, jsonify
 from functools import wraps
+import os
 
 
-# Token Authentication:
+SECRET_KEY = os.environ.get("SECRET_KEY") or "super secret secrets"
 
-SECRET_KEY = "secret key"
 
 # JWT Authentication:
 def encode_token(customer_id):
@@ -28,24 +28,38 @@ def encode_token(customer_id):
 def token_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
-    
-        if "Authorization" in request.headers:
-            token = request.headers['Authorization'].split(" ")[1] 
-            
-            if not token:
-                return jsonify({"message": "Token is missing!"}), 401
-            
-            try:
-                data = jwt.decode(token, SECRET_KEY, algorithms=["HS256"]) # Decode token.
-                customer_id = data['sub'] # Fetch customer ID.
-            except jose.exceptions.ExpiredSignatureError:
-                return jsonify({"message": "Token has expired!"}), 401
-            except jose.exceptions.JWTError:
-                return jsonify({"message": "Invalid Token."}), 401
+        auth_header = request.headers.get("Authorization")
         
-            return f(customer_id, *args, **kwargs) 
-                
-        else:
+        if not auth_header:
             return jsonify({"message": "You must be logged in to access this."}), 401
         
+        auth_parts = auth_header.strip().split()
+        
+        # Accept "Bearer <token> or just <token>":
+        
+        if len(auth_parts) == 2 and auth_parts[0].lower() == "bearer":
+            token = auth_parts[1]
+            
+        elif len(auth_parts) == 1:
+            token = auth_parts[0]
+        else:
+            return jsonify({"message": "Invalid Authorization header"}), 401
+            
+        try:
+            data = jwt.decode(
+                token, 
+                SECRET_KEY, 
+                algorithms=["HS256"]
+            ) # Decode token.
+            
+            customer_id = data["sub"] # Fetch customer ID.
+            
+        except jose.exceptions.ExpiredSignatureError:
+            return jsonify({"message": "Token has expired!"}), 401
+        
+        except jose.exceptions.JWTError:
+            return jsonify({"message": "Invalid Token."}), 401
+    
+        return f(customer_id, *args, **kwargs) 
+                
     return decorated

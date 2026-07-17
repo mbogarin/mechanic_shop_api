@@ -10,12 +10,12 @@ from app.models import Customer, Service_Ticket, db
 from app.blueprints.service_tickets.schemas import service_tickets_schema
 
 
-
 # = CUSTOMER ROUTES:
 
 # 1. (POST) CREATE CUSTOMER:
 @customers_bp.route('/', methods=['POST'])
 def create_customer():
+        
     try:
         customer_data = customer_schema.load(request.json)
     except ValidationError as e:
@@ -72,6 +72,17 @@ def update_customer(customer_id):
         updated_data = customer_schema.load(request.json)
     except ValidationError as e:
         return jsonify(e.messages), 400
+    
+    # Check if updated email is already in use by another customer:
+    if (
+        "email" in updated_data
+        and updated_data["email"] != customer.email
+    ):
+        query = select(Customer).where(Customer.email == updated_data["email"])
+        existing_customer = db.session.execute(query).scalars().first()
+        
+        if existing_customer:
+            return jsonify({"message": "Email is already associated with an account."}), 400
     
     for key, value in updated_data.items():
         setattr(customer, key, value)
@@ -136,4 +147,4 @@ def get_my_tickets(customer_id):
     
     service_tickets = db.session.execute(query).scalars().all()
     
-    return service_tickets_schema.jsonify(service_tickets), 200 
+    return service_tickets_schema.jsonify(service_tickets), 200

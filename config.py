@@ -1,16 +1,25 @@
-# = Holds configurations to be used in create_app() to configure app:
+import os
 
 class DevelopmentConfig:
-    SQLALCHEMY_DATABASE_URI = 'mysql+mysqlconnector://root:Murphy324!!@localhost/mechanic_shop'
+    SQLALCHEMY_DATABASE_URI = os.environ.get(
+        "DEVELOPMENT_DATABASE_URI",
+        "sqlite:///development.db" 
+        )
     DEBUG = True
+    CACHE_TYPE = "SimpleCache"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
-    
-class TestingConfig:
-    pass
 
+class TestingConfig:
+    SQLALCHEMY_DATABASE_URI = "sqlite:///testing.db"
+    DEBUG = True
+    CACHE_TYPE = "SimpleCache"
 
 
 class ProductionConfig:
-    pass
+    SQLALCHEMY_DATABASE_URI = os.environ.get("SQLALCHEMY_DATABASE_URI")
+    CACHE_TYPE = "SimpleCache"
+
+
+
 

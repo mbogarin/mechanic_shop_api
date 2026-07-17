@@ -35,7 +35,6 @@ class Customer(Base):
     name: Mapped[str] = mapped_column(db.String(250), nullable=False)
     email: Mapped[str] = mapped_column(db.String(350), nullable=False, unique=True)
     phone: Mapped[str] = mapped_column(db.String(20), nullable=False)
-    
     password: Mapped[str] = mapped_column(db.String(100), nullable=False) # password added for token authorization.
 
     # One-to-Many relationship w/ Service Tickets:

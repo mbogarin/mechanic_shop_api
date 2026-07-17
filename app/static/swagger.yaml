@@ -1,0 +1,994 @@
+# Initialization:
+swagger: "2.0"
+info:
+    title: "Mechanic Shop API"
+    description: "REST API for managing customers, mechanics, service tickets, and inventory parts for a mechanic shop. Protected customer routes require a JWT Bearer token returned by the customer login endpoint."
+    version: "1.0.0"
+host: "mechanic-shop-api-06j7.onrender.com"
+basePath: "/"
+schemes:
+    - "https"
+consumes:
+    - "application/json"
+produces:
+    - "application/json"
+
+tags:
+    - name: "Customers"
+      description: "Customer accounts, authentication, and customer service tickets"
+    - name: "Mechanics"
+      description: "Mechanic management and ticket rankings"
+    - name: "Service Tickets"
+      description: "Service ticket creation and relationship management"
+    - name: "Inventory"
+      description: "Inventory part management"
+
+# = Authentication/Authorization:
+securityDefinitions:
+    bearerAuth:
+        type: "apiKey"
+        name: "Authorization"
+        in: header
+        description: "Paste the JWT token only. The Bearer prefix is not required."
+
+# = Paths:
+paths:
+    # > Customers endpoints:
+    # 1. Create customers:
+    /customers/:
+        post:
+            tags: ["Customers"]
+            summary: "Create a customer"
+            description: "Creates a new customer account. Customer email addresses must be unique."
+            operationId: "createCustomer"
+            parameters:
+                - in: "body"
+                  name: "body"
+                  required: true
+                  schema:
+                      $ref: "#/definitions/CustomerInput"
+            responses:
+                "201":
+                    description: "Customer created successfully."
+                    schema:
+                        $ref: "#/definitions/Customer"
+                "400":
+                    description: "Invalid input or email already associated with an account."
+                    schema:
+                        $ref: "#/definitions/ValidationOrMessageResponse"
+                    examples:
+                        application/json:
+                            message: "Email is already associated with an account."
+
+        # 2. Get all customers:
+        get:
+            tags: ["Customers"]
+            summary: "Get all customers"
+            description: "Returns customers using page-based pagination."
+            operationId: "getCustomers"
+            parameters:
+                - in: "query"
+                  name: "page"
+                  type: "integer"
+                  format: "int32"
+                  default: 1
+                  minimum: 1
+                  description: "Page number"
+                - in: "query"
+                  name: "per_page"
+                  type: "integer"
+                  format: "int32"
+                  default: 5
+                  minimum: 1
+                  description: "Number of customers per page"
+            responses:
+                "200":
+                    description: "Paginated customer results"
+                    schema:
+                        $ref: "#/definitions/PaginatedCustomers"
+
+        # 3. Update customer:
+        put:
+            tags: ["Customers"]
+            summary: "Update the authenticated customer"
+            description: "Updates the specified customer's information identified by the JWT subject using a complete customer payload. All required fields must be included in the request."
+            operationId: "updateCustomer"
+            security:
+                - bearerAuth: []
+            parameters:
+                - in: "body"
+                  name: "body"
+                  required: true
+                  schema:
+                      $ref: "#/definitions/CustomerInput"
+            responses:
+                "200":
+                    description: "Customer updated successfully"
+                    schema:
+                        $ref: "#/definitions/Customer"
+                "400":
+                    description: "Validation error or email already associated with an account."
+                    schema:
+                        $ref: "#/definitions/ValidationOrMessageResponse"
+                    examples:
+                        application/json:
+                            message: "Email is already associated with an account."
+                "401":
+                    description: "Missing, invalid, or expired token"
+                    schema:
+                        $ref: "#/definitions/MessageResponse"
+                "404":
+                    description: "Customer not found"
+                    schema:
+                        $ref: "#/definitions/ErrorResponse"
+
+        # 4. Delete customer:
+        delete:
+            tags: ["Customers"]
+            summary: "Delete the authenticated customer"
+            description: "Deletes the customer identified by the JWT subject. Related service tickets are deleted by the model cascade."
+            operationId: "deleteCustomer"
+            security:
+                - bearerAuth: []
+            responses:
+                "200":
+                    description: "Customer deleted successfully"
+                    schema:
+                        $ref: "#/definitions/MessageResponse"
+                "401":
+                    description: "Missing, invalid, or expired token"
+                    schema:
+                        $ref: "#/definitions/MessageResponse"
+                "404":
+                    description: "Customer not found"
+                    schema:
+                        $ref: "#/definitions/ErrorResponse"
+
+    # 5. Get single customer:
+    /customers/{customer_id}:
+        get:
+            tags: ["Customers"]
+            summary: "Get single customer"
+            description: "Retrieves the customer with the specified ID. Returns the customer's information if found or an error if the customer does not exist."
+            operationId: "getCustomer"
+            parameters:
+                - $ref: "#/parameters/CustomerId"
+            responses:
+                "200":
+                    description: "Customer found"
+                    schema:
+                        $ref: "#/definitions/Customer"
+                "404":
+                    description: "Customer not found"
+                    schema:
+                        $ref: "#/definitions/ErrorResponse"
+
+    # 6. Login:
+    /customers/login:
+        post:
+            tags: ["Customers"]
+            summary: "Log in a customer"
+            description: "Validates email and password and returns a JWT that expires after one hour."
+            operationId: "loginCustomer"
+            parameters:
+                - in: "body"
+                  name: "body"
+                  required: true
+                  schema:
+                      $ref: "#/definitions/LoginInput"
+            responses:
+                "200":
+                    description: "Login successful"
+                    schema:
+                        $ref: "#/definitions/LoginResponse"
+                "400":
+                    description: "Validation error"
+                    schema:
+                        $ref: "#/definitions/ValidationError"
+                "401":
+                    description: "Invalid email or password"
+                    schema:
+                        $ref: "#/definitions/MessageResponse"
+
+    # 7. Get customer tickets:
+    /customers/my-tickets:
+        get:
+            tags: ["Customers"]
+            summary: "Get the authenticated customer's service tickets"
+            description: "Returns service tickets whose customer_id matches the JWT subject."
+            operationId: "getMyTickets"
+            security:
+                - bearerAuth: []
+            responses:
+                "200":
+                    description: "Customer service tickets"
+                    schema:
+                        type: "array"
+                        items:
+                            $ref: "#/definitions/ServiceTicket"
+                "401":
+                    description: "Missing, invalid, or expired token"
+                    schema:
+                        $ref: "#/definitions/MessageResponse"
+
+    # > Mechanics endpoints:
+    # 1. Create mechanic:
+    /mechanics/:
+        post:
+            tags: ["Mechanics"]
+            summary: "Create a mechanic"
+            description: "Creates a new mechanic record. The request must include the mechanic's name and email address. Email addresses must be unique."
+            operationId: "createMechanic"
+            parameters:
+                - in: "body"
+                  name: "body"
+                  required: true
+                  schema:
+                      $ref: "#/definitions/MechanicInput"
+            responses:
+                "201":
+                    description: "Mechanic created successfully"
+                    schema:
+                        $ref: "#/definitions/Mechanic"
+                "400":
+                    description: "Validation error"
+                    schema:
+                        $ref: "#/definitions/ValidationError"
+
+        # 2. Get all mechanics:
+        get:
+            tags: ["Mechanics"]
+            summary: "Get all mechanics"
+            description: "Retrieves a list of all mechanics currently stored in the system, including their basic contact information."
+            operationId: "getMechanics"
+            responses:
+                "200":
+                    description: "All mechanics"
+                    schema:
+                        type: "array"
+                        items:
+                            $ref: "#/definitions/Mechanic"
+
+    # 3. Update mechanic:
+    /mechanics/{mechanic_id}:
+        put:
+            tags: ["Mechanics"]
+            summary: "Update a mechanic"
+            description: "Updates the specified mechanic's information using a complete mechanic payload. All required fields must be included in the request."
+            operationId: "updateMechanic"
+            parameters:
+                - $ref: "#/parameters/MechanicId"
+                - in: "body"
+                  name: "body"
+                  required: true
+                  schema:
+                      $ref: "#/definitions/MechanicInput"
+            responses:
+                "200":
+                    description: "Mechanic updated successfully"
+                    schema:
+                        $ref: "#/definitions/Mechanic"
+                "400":
+                    description: "Validation error"
+                    schema:
+                        $ref: "#/definitions/ValidationError"
+                "404":
+                    description: "Mechanic not found"
+                    schema:
+                        $ref: "#/definitions/ErrorResponse"
+
+        # 4. Delete mechanic:
+        delete:
+            tags: ["Mechanics"]
+            summary: "Delete a mechanic"
+            description: "Permanently removes the specified mechanic from the system. Returns a confirmation message after successful deletion."
+            operationId: "deleteMechanic"
+            parameters:
+                - $ref: "#/parameters/MechanicId"
+            responses:
+                "200":
+                    description: "Mechanic deleted successfully"
+                    schema:
+                        $ref: "#/definitions/MessageResponse"
+                "404":
+                    description: "Mechanic not found"
+                    schema:
+                        $ref: "#/definitions/ErrorResponse"
+
+    # 5. Rank mechanics by most tickets assigned:
+    /mechanics/most-tickets:
+        get:
+            tags: ["Mechanics"]
+            summary: "Rank mechanics by assigned ticket count"
+            description: "Retrieves mechanics ranked by the number of service tickets currently assigned to them and sorts them from the most to the least assigned service tickets, allowing workload distribution to be analyzed."
+            operationId: "rankMechanicsByMostTickets"
+            responses:
+                "200":
+                    description: "Ranked mechanics"
+                    schema:
+                        type: "array"
+                        items:
+                            $ref: "#/definitions/MechanicTicketCount"
+
+    # > Inventory endpoints:
+    # 1. Create inventory part:
+    /inventory/:
+        post:
+            tags: ["Inventory"]
+            summary: "Create an inventory part"
+            description: "Creates a new inventory part that can later be assigned to service tickets. Part names must be unique if enforced by the API."
+            operationId: "createInventoryPart"
+            parameters:
+                - in: "body"
+                  name: "body"
+                  required: true
+                  schema:
+                      $ref: "#/definitions/InventoryInput"
+            responses:
+                "201":
+                    description: "Inventory part created successfully"
+                    schema:
+                        $ref: "#/definitions/InventoryPart"
+                "400":
+                    description: "Validation error"
+                    schema:
+                        $ref: "#/definitions/ValidationError"
+
+        # 2. Get all inventory parts:
+        get:
+            tags: ["Inventory"]
+            summary: "Get all inventory parts"
+            description: "Retrieves a list of all inventory parts currently available in the mechanic shop inventory."
+            operationId: "getInventoryParts"
+            responses:
+                "200":
+                    description: "All inventory parts"
+                    schema:
+                        type: "array"
+                        items:
+                            $ref: "#/definitions/InventoryPart"
+
+    # 3. Get single inventory part:
+    /inventory/{part_id}:
+        get:
+            tags: ["Inventory"]
+            summary: "Get single inventory part"
+            description: "Retrieves the inventory part with the specified ID. Returns the part's details if found or an error if the part does not exist."
+            operationId: "getInventoryPart"
+            parameters:
+                - $ref: "#/parameters/PartId"
+            responses:
+                "200":
+                    description: "Inventory part found"
+                    schema:
+                        $ref: "#/definitions/InventoryPart"
+                "404":
+                    description: "Inventory part not found"
+                    schema:
+                        $ref: "#/definitions/MessageResponse"
+
+        # 4. Update inventory part:
+        put:
+            tags: ["Inventory"]
+            summary: "Update an inventory part"
+            description: "Updates the information for the specified inventory part. Only the values provided in the request body will be modified. Supports partial updates to name and/or price."
+            operationId: "updateInventoryPart"
+            parameters:
+                - $ref: "#/parameters/PartId"
+                - in: "body"
+                  name: "body"
+                  required: true
+                  schema:
+                      $ref: "#/definitions/InventoryUpdateInput"
+            responses:
+                "200":
+                    description: "Inventory part updated successfully"
+                    schema:
+                        $ref: "#/definitions/InventoryPart"
+                "400":
+                    description: "Validation error"
+                    schema:
+                        $ref: "#/definitions/ValidationError"
+                "404":
+                    description: "Inventory part not found"
+                    schema:
+                        $ref: "#/definitions/MessageResponse"
+
+        # 5. Delete inventory part:
+        delete:
+            tags: ["Inventory"]
+            summary: "Delete an inventory part"
+            description: "Permanently removes the specified inventory part from the inventory and returns a confirmation message upon success."
+            operationId: "deleteInventoryPart"
+            parameters:
+                - $ref: "#/parameters/PartId"
+            responses:
+                "200":
+                    description: "Inventory part deleted successfully"
+                    schema:
+                        $ref: "#/definitions/MessageResponse"
+                "404":
+                    description: "Inventory part not found"
+                    schema:
+                        $ref: "#/definitions/MessageResponse"
+
+    # > Service Tickets endpoints:
+    # 1. Create service ticket:
+    /service-tickets/:
+        post:
+            tags: ["Service Tickets"]
+            summary: "Create a service ticket"
+            description: "Creates a ticket for an existing customer. VIN values must be unique."
+            operationId: "createServiceTicket"
+            parameters:
+                - in: "body"
+                  name: "body"
+                  required: true
+                  schema:
+                      $ref: "#/definitions/ServiceTicketInput"
+            responses:
+                "201":
+                    description: "Service ticket created successfully"
+                    schema:
+                        $ref: "#/definitions/ServiceTicket"
+                "400":
+                    description: "Validation error or VIN already associated with another ticket."
+                    schema:
+                        $ref: "#/definitions/ValidationOrErrorResponse"
+                    examples:
+                        application/json:
+                            error: "VIN is already associated with another service ticket."
+                "404":
+                    description: "Customer not found"
+                    schema:
+                        $ref: "#/definitions/ErrorResponse"
+
+        # 2. Get all service tickets:
+        get:
+            tags: ["Service Tickets"]
+            summary: "Get all service tickets"
+            description: "Returns all tickets. This route is cached for 60 seconds."
+            operationId: "getServiceTickets"
+            responses:
+                "200":
+                    description: "All service tickets"
+                    schema:
+                        type: "array"
+                        items:
+                            $ref: "#/definitions/ServiceTicket"
+
+    # 3. Assign service ticket mechanics:
+    /service-tickets/{ticket_id}/assign-mechanic/{mechanic_id}:
+        put:
+            tags: ["Service Tickets"]
+            summary: "Assign a mechanic to a service ticket"
+            description: "Adds an existing mechanic to an existing ticket. Limited to five requests per hour per client IP."
+            operationId: "assignMechanic"
+            parameters:
+                - $ref: "#/parameters/TicketId"
+                - $ref: "#/parameters/MechanicId"
+            responses:
+                "200":
+                    description: "Mechanic assigned or mechanic already assigned to this service ticket."
+                    schema:
+                        $ref: "#/definitions/ServiceTicketOrMessage"
+                "404":
+                    description: "Service ticket or mechanic not found"
+                    schema:
+                        $ref: "#/definitions/ErrorResponse"
+                "429":
+                    description: "Assignment rate limit exceeded."
+                    schema:
+                        $ref: "#/definitions/RateLimitResponse"
+
+    # 4. Remove service ticket mechanics:
+    /service-tickets/{ticket_id}/remove-mechanic/{mechanic_id}:
+        put:
+            tags: ["Service Tickets"]
+            summary: "Remove a mechanic from a service ticket"
+            description: "Removes the specified mechanic from the service ticket. Returns the updated ticket if the mechanic was successfully removed."
+            operationId: "removeMechanic"
+            parameters:
+                - $ref: "#/parameters/TicketId"
+                - $ref: "#/parameters/MechanicId"
+            responses:
+                "200":
+                    description: "Mechanic was removed from this service ticket or mechanic was not assigned."
+                    schema:
+                        $ref: "#/definitions/ServiceTicketOrMessage"
+                "404":
+                    description: "Service ticket or mechanic not found"
+                    schema:
+                        $ref: "#/definitions/ErrorResponse"
+
+    # 5. Add/Remove service ticket mechanics:
+    /service-tickets/{ticket_id}/edit:
+        put:
+            tags: ["Service Tickets"]
+            summary: "Add and remove multiple mechanics on a service ticket"
+            description: "Adds mechanic IDs from add_ids and removes mechanic IDs from remove_ids. Missing or unrelated IDs are ignored by the current route logic."
+            operationId: "editTicketMechanics"
+            parameters:
+                - $ref: "#/parameters/TicketId"
+                - in: "body"
+                  name: "body"
+                  required: true
+                  schema:
+                      $ref: "#/definitions/EditTicketMechanicsInput"
+            responses:
+                "200":
+                    description: "Ticket mechanic assignments updated"
+                    schema:
+                        $ref: "#/definitions/EditedServiceTicket"
+                "400":
+                    description: "Validation error or invalid request data"
+                    schema:
+                        $ref: "#/definitions/ValidationOrErrorResponse"
+                    examples:
+                        application/json:
+                            error: "Invalid request data."
+                "404":
+                    description: "Service ticket not found"
+                    schema:
+                        $ref: "#/definitions/ErrorResponse"
+
+    # 6. Add inventory part to service ticket:
+    /service-tickets/{ticket_id}/add-part/{part_id}:
+        put:
+            tags: ["Service Tickets"]
+            summary: "Add an inventory part to a service ticket"
+            description: "Associates an inventory part with the specified service ticket and returns the updated ticket details."
+            operationId: "addPartToTicket"
+            parameters:
+                - $ref: "#/parameters/TicketId"
+                - $ref: "#/parameters/PartId"
+            responses:
+                "200":
+                    description: "Inventory part added to the ticket"
+                    schema:
+                        $ref: "#/definitions/ServiceTicket"
+                "400":
+                    description: "Part is already added to the ticket"
+                    schema:
+                        $ref: "#/definitions/MessageResponse"
+                "404":
+                    description: "Service ticket or inventory part not found"
+                    schema:
+                        $ref: "#/definitions/MessageResponse"
+
+# = Definitions:
+parameters:
+    CustomerId:
+        name: "customer_id"
+        in: "path"
+        required: true
+        type: "integer"
+        format: "int32"
+        description: "Customer ID"
+
+    MechanicId:
+        name: "mechanic_id"
+        in: "path"
+        required: true
+        type: "integer"
+        format: "int32"
+        description: "Mechanic ID"
+
+    TicketId:
+        name: "ticket_id"
+        in: "path"
+        required: true
+        type: "integer"
+        format: "int32"
+        description: "Ticket ID"
+
+    PartId:
+        name: "part_id"
+        in: "path"
+        required: true
+        type: "integer"
+        format: "int32"
+        description: "Inventory part ID"
+
+definitions:
+    # > Customers:
+    CustomerInput:
+        type: "object"
+        required: ["name", "email", "phone", "password"]
+        properties:
+            name:
+                type: "string"
+                maxLength: 250
+                example: "John Smith"
+            email:
+                type: "string"
+                maxLength: 350
+                example: "john.smith@email.com"
+            phone:
+                type: "string"
+                maxLength: 20
+                example: "123-456-7890"
+            password:
+                type: "string"
+                maxLength: 100
+                example: "securePassword123"
+
+    Customer:
+        allOf:
+            - $ref: "#/definitions/CustomerInput"
+            - type: "object"
+              required: ["id"]
+              properties:
+                  id:
+                      type: "integer"
+                      format: "int32"
+                      example: 1
+
+    LoginInput:
+        type: "object"
+        required: ["email", "password"]
+        properties:
+            email:
+                type: "string"
+                format: "email"
+                example: "john.smith@email.com"
+            password:
+                type: "string"
+                example: "securePassword123"
+
+    LoginResponse:
+        type: "object"
+        required: ["status", "message", "token"]
+        properties:
+            status:
+                type: "string"
+                example: "success"
+            message:
+                type: "string"
+                example: "Customer successfully logged in!"
+            token:
+                type: "string"
+                description: "JWT Bearer token valid for one hour"
+                example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+
+    PaginatedCustomers:
+        type: "object"
+        required:
+            [
+                "customers",
+                "total_customers",
+                "page",
+                "per_page",
+                "total_page",
+                "has_next",
+                "has_prev",
+            ]
+        properties:
+            customers:
+                type: "array"
+                items:
+                    $ref: "#/definitions/Customer"
+            total_customers:
+                type: "integer"
+                format: "int32"
+                example: 12
+            page:
+                type: "integer"
+                format: "int32"
+                example: 1
+            per_page:
+                type: "integer"
+                format: "int32"
+                example: 5
+            total_page:
+                type: "integer"
+                format: "int32"
+                example: 3
+            has_next:
+                type: "boolean"
+                example: true
+            has_prev:
+                type: "boolean"
+                example: false
+
+    # > Mechanics:
+    MechanicInput:
+        type: "object"
+        required: ["name", "email", "phone", "salary"]
+        properties:
+            name:
+                type: "string"
+                maxLength: 250
+                example: "Murphy Clarke"
+            email:
+                type: "string"
+                format: "email"
+                maxLength: 350
+                example: "murphy.clarke@email.com"
+            phone:
+                type: "string"
+                maxLength: 15
+                example: "123-456-7890"
+            salary:
+                type: "number"
+                format: "float"
+                example: 65000.0
+
+    Mechanic:
+        allOf:
+            - $ref: "#/definitions/MechanicInput"
+            - type: "object"
+              required: ["id"]
+              properties:
+                  id:
+                      type: "integer"
+                      format: "int32"
+                      example: 1
+
+    MechanicTicketCount:
+        allOf:
+            - $ref: "#/definitions/Mechanic"
+            - type: "object"
+              required: ["ticket_count"]
+              properties:
+                  ticket_count:
+                      type: "integer"
+                      format: "int32"
+                      example: 4
+
+    # > Inventory:
+    InventoryInput:
+        type: "object"
+        required: ["name", "price"]
+        properties:
+            name:
+                type: "string"
+                maxLength: 250
+                example: "Oil Fluid"
+            price:
+                type: "number"
+                format: "float"
+                example: 49.99
+
+    InventoryUpdateInput:
+        type: "object"
+        properties:
+            name:
+                type: "string"
+                maxLength: 250
+                example: "Premium Oil Fluid"
+            price:
+                type: "number"
+                format: "float"
+                example: 79.99
+
+    InventoryPart:
+        allOf:
+            - $ref: "#/definitions/InventoryInput"
+            - type: "object"
+              required: ["id"]
+              properties:
+                  id:
+                      type: "integer"
+                      format: "int32"
+                      example: 1
+
+    # > Service Tickets:
+    ServiceTicketInput:
+        type: "object"
+        required: ["VIN", "service_date", "service_desc", "customer_id"]
+        properties:
+            VIN:
+                type: "string"
+                maxLength: 50
+                example: "1HGCM82633A004352"
+            service_date:
+                type: "string"
+                description: "Service date stored by the API as a string"
+                example: "07/11/2026"
+            service_desc:
+                type: "string"
+                maxLength: 350
+                example: "Oil change and brake inspection"
+            customer_id:
+                type: "integer"
+                format: "int32"
+                example: 1
+
+    ServiceTicket:
+        type: "object"
+        required:
+            [
+                "id",
+                "VIN",
+                "service_date",
+                "service_desc",
+                "customer_id",
+                "customer",
+                "mechanics",
+                "parts",
+            ]
+        properties:
+            id:
+                type: "integer"
+                format: "int32"
+                example: 1
+            VIN:
+                type: "string"
+                example: "1HGCM82633A004352"
+            service_date:
+                type: "string"
+                example: "07/11/2026"
+            service_desc:
+                type: "string"
+                example: "Oil change and brake inspection"
+            customer_id:
+                type: "integer"
+                format: "int32"
+                example: 1
+            customer:
+                $ref: "#/definitions/Customer"
+            mechanics:
+                type: "array"
+                items:
+                    $ref: "#/definitions/Mechanic"
+            parts:
+                type: "array"
+                items:
+                    $ref: "#/definitions/InventoryPart"
+
+    EditedServiceTicket:
+        type: "object"
+        required:
+            [
+                "id",
+                "VIN",
+                "service_date",
+                "service_desc",
+                "customer",
+                "mechanics",
+                "parts",
+            ]
+        properties:
+            id:
+                type: "integer"
+                format: "int32"
+                example: 1
+            VIN:
+                type: "string"
+                example: "1HGCM82633A004352"
+            service_date:
+                type: "string"
+                example: "07/11/2026"
+            service_desc:
+                type: "string"
+                example: "Oil change and brake inspection"
+            customer:
+                $ref: "#/definitions/Customer"
+            mechanics:
+                type: "array"
+                items:
+                    $ref: "#/definitions/Mechanic"
+            parts:
+                type: "array"
+                items:
+                    $ref: "#/definitions/InventoryPart"
+
+    EditTicketMechanicsInput:
+        type: "object"
+        properties:
+            add_ids:
+                type: "array"
+                default: []
+                items:
+                    type: "integer"
+                    format: "int32"
+                example: [1, 2]
+            remove_ids:
+                type: "array"
+                default: []
+                items:
+                    type: "integer"
+                    format: "int32"
+                example: [3]
+
+    ServiceTicketOrMessage:
+        type: "object"
+        description: "Returns an updated service ticket when the relationship changes, or a message when no change is needed."
+        properties:
+            id:
+                type: "integer"
+                format: "int32"
+                example: 1
+            VIN:
+                type: "string"
+                example: "1HGCM82633A004352"
+            service_date:
+                type: "string"
+                example: "07/11/2026"
+            service_desc:
+                type: "string"
+                example: "Oil change and brake inspection"
+            customer_id:
+                type: "integer"
+                format: "int32"
+                example: 1
+            customer:
+                $ref: "#/definitions/Customer"
+            mechanics:
+                type: "array"
+                items:
+                    $ref: "#/definitions/Mechanic"
+            parts:
+                type: "array"
+                items:
+                    $ref: "#/definitions/InventoryPart"
+            message:
+                type: "string"
+                example: "Mechanic is already assigned to this service ticket."
+
+    # > Responses:
+    MessageResponse:
+        type: "object"
+        required: ["message"]
+        properties:
+            message:
+                type: "string"
+                example: "Operation was completed successfully."
+
+    ErrorResponse:
+        type: "object"
+        required: ["error"]
+        properties:
+            error:
+                type: "string"
+                example: "Resource not found."
+
+    ValidationError:
+        type: "object"
+        additionalProperties:
+            type: "array"
+            items:
+                type: "string"
+        example:
+            email:
+                - "Missing data for required fields."
+
+    ValidationOrMessageResponse:
+        type: "object"
+        description: "Returns validation fields or a message describing the request problem."
+        properties:
+            message:
+                type: "string"
+                example: "Email is already associated with an account."
+        additionalProperties:
+            type: "array"
+            items:
+                type: "string"
+
+    ValidationOrErrorResponse:
+        type: "object"
+        description: "Returns validation fields or an error describing the request problem."
+        properties:
+            error:
+                type: "string"
+                example: "VIN is already associated with another service."
+        additionalProperties:
+            type: "array"
+            items:
+                type: "string"
+
+    RateLimitResponse:
+        type: "object"
+        required:
+            - error
+            - message
+        properties:
+            error:
+                type: "string"
+                description: The type of error that occurred.
+                example: "Too Many Requests"
+            message:
+                type: "string"
+                description: The rate limit restriction that was exceeded.
+                example: "5 per 1 hour"
