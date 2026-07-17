@@ -3,7 +3,7 @@ name: Mechanic Shop API Tests
 on:
     push:
         branches:
-            - deployment-cicd-pipeline
+            - main
 
 jobs:
     build:
